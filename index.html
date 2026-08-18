@@ -792,7 +792,7 @@
     <div class="bg-controls">
       <div class="file-input-wrapper">
         <input type="file" id="bgInput" accept="image/*,video/*">
-        <div class="file-input-label">📁 Установить фон</div>
+        <div class="file-input-label"> Установить фон</div>
       </div>
       <button class="remove-bg-btn" id="removeBgBtn">✕ Убрать</button>
     </div>
@@ -817,28 +817,35 @@
 <div class="status-bar" id="statusBar"></div>
 
 <script>
-// ====== IndexedDB ======
-const DB_NAME = 'TimerProMusic';
+// ====== IndexedDB - ЕДИНОЕ ХРАНИЛИЩЕ ДЛЯ ВСЕХ БОЛЬШИХ ДАННЫХ ======
+const DB_NAME = 'TimerProDB';
 const DB_VERSION = 1;
 let db = null;
 
 function openDatabase() {
   return new Promise((resolve, reject) => {
     const request = indexedDB.open(DB_NAME, DB_VERSION);
+    
     request.onupgradeneeded = (e) => {
       const database = e.target.result;
       if (!database.objectStoreNames.contains('tracks')) {
         database.createObjectStore('tracks', { keyPath: 'id' });
       }
+      if (!database.objectStoreNames.contains('background')) {
+        database.createObjectStore('background');
+      }
     };
+    
     request.onsuccess = (e) => {
       db = e.target.result;
       resolve(db);
     };
+    
     request.onerror = (e) => reject(e);
   });
 }
 
+// Треки
 function saveTrackToDB(track) {
   return new Promise((resolve, reject) => {
     const tx = db.transaction('tracks', 'readwrite');
@@ -865,6 +872,37 @@ function loadAllTracks() {
     const store = tx.objectStore('tracks');
     const request = store.getAll();
     request.onsuccess = () => resolve(request.result);
+    request.onerror = () => reject(request.error);
+  });
+}
+
+// Фон
+function saveBackgroundToDB(type, data) {
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction('background', 'readwrite');
+    const store = tx.objectStore('background');
+    const request = store.put({ type, data }, 'current');
+    request.onsuccess = () => resolve();
+    request.onerror = () => reject(request.error);
+  });
+}
+
+function loadBackgroundFromDB() {
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction('background', 'readonly');
+    const store = tx.objectStore('background');
+    const request = store.get('current');
+    request.onsuccess = () => resolve(request.result);
+    request.onerror = () => reject(request.error);
+  });
+}
+
+function deleteBackgroundFromDB() {
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction('background', 'readwrite');
+    const store = tx.objectStore('background');
+    const request = store.delete('current');
+    request.onsuccess = () => resolve();
     request.onerror = () => reject(request.error);
   });
 }
@@ -911,10 +949,10 @@ const melodies = [
   { name: '🔔 Колокол', type: 'sine', notes: [440, 554.37, 659.25, 880], duration: 0.6 },
   { name: '🎹 Пианино', type: 'triangle', notes: [261.63, 329.63, 392, 523.25], duration: 0.5 },
   { name: '🎸 Синтез', type: 'sine', notes: [220, 277.18, 329.63, 440], duration: 0.45 },
-  { name: '🎺 Фанфары', type: 'triangle', notes: [196, 261.63, 329.63, 392, 523.25], duration: 0.4 },
-  { name: ' Орган', type: 'sine', notes: [130.81, 164.81, 196, 261.63], duration: 0.7 },
+  { name: ' Фанфары', type: 'triangle', notes: [196, 261.63, 329.63, 392, 523.25], duration: 0.4 },
+  { name: '🎻 Орган', type: 'sine', notes: [130.81, 164.81, 196, 261.63], duration: 0.7 },
   { name: '🎼 Арпеджио', type: 'triangle', notes: [196, 246.94, 293.66, 392, 493.88], duration: 0.35 },
-  { name: ' Волна', type: 'sine', notes: [220, 261.63, 329.63, 261.63, 220], duration: 0.5 },
+  { name: '🌊 Волна', type: 'sine', notes: [220, 261.63, 329.63, 261.63, 220], duration: 0.5 },
   { name: '✨ Звёзды', type: 'sine', notes: [523.25, 659.25, 783.99, 659.25, 523.25], duration: 0.4 },
   { name: '🌙 Луна', type: 'triangle', notes: [174.61, 220, 261.63, 349.23], duration: 0.55 },
   { name: '☀️ Солнце', type: 'sine', notes: [261.63, 329.63, 392, 523.25, 659.25], duration: 0.45 }
@@ -1008,7 +1046,7 @@ animateParticles();
 // ====== ТАЙМЕР ======
 let intervals = [60, 30];
 const labels = ['Работа', 'Отдых'];
-let currentIndex = 0;
+let timerCurrentIndex = 0;
 let timeLeft = intervals[0];
 let totalTime = intervals[0];
 let timerId = null;
@@ -1062,7 +1100,7 @@ function updateDisplay() {
   timerEl.textContent = formatTime(timeLeft);
   const percent = ((totalTime - timeLeft) / totalTime) * 100;
   progressEl.style.width = percent + '%';
-  document.title = `${formatTime(timeLeft)} — ${labels[currentIndex]}`;
+  document.title = `${formatTime(timeLeft)} — ${labels[timerCurrentIndex]}`;
 }
 
 function startRinging() {
@@ -1093,13 +1131,13 @@ function switchMode() {
 
 function doSwitch() {
   stopRinging();
-  currentIndex = (currentIndex + 1) % intervals.length;
-  if (currentIndex === 0) cycle++;
-  timeLeft = intervals[currentIndex];
-  totalTime = intervals[currentIndex];
-  modeEl.textContent = labels[currentIndex];
-  container.classList.toggle('work', currentIndex === 0);
-  container.classList.toggle('rest', currentIndex === 1);
+  timerCurrentIndex = (timerCurrentIndex + 1) % intervals.length;
+  if (timerCurrentIndex === 0) cycle++;
+  timeLeft = intervals[timerCurrentIndex];
+  totalTime = intervals[timerCurrentIndex];
+  modeEl.textContent = labels[timerCurrentIndex];
+  container.classList.toggle('work', timerCurrentIndex === 0);
+  container.classList.toggle('rest', timerCurrentIndex === 1);
   cycleEl.textContent = `Цикл: ${cycle}`;
   container.classList.add('pulse');
   setTimeout(() => container.classList.remove('pulse'), 600);
@@ -1133,7 +1171,7 @@ resetBtn.addEventListener('click', () => {
   clearInterval(timerId);
   stopRinging();
   isRunning = false;
-  currentIndex = 0;
+  timerCurrentIndex = 0;
   cycle = 1;
   timeLeft = intervals[0];
   totalTime = intervals[0];
@@ -1160,8 +1198,8 @@ function updateIntervals() {
   localStorage.setItem('timer_work', w);
   localStorage.setItem('timer_rest', r);
   if (!isRunning) {
-    timeLeft = intervals[currentIndex];
-    totalTime = intervals[currentIndex];
+    timeLeft = intervals[timerCurrentIndex];
+    totalTime = intervals[timerCurrentIndex];
     updateDisplay();
   }
 }
@@ -1220,7 +1258,7 @@ function renderPlaylist() {
   modalPlaylist.innerHTML = '';
   
   if (playlist.length === 0) {
-    modalPlaylist.innerHTML = '<div style="color:rgba(255,255,255,0.4);text-align:center;padding:40px 20px;font-family:Rajdhani;font-size:1.1rem;"> Плейлист пуст<br><small style="opacity:0.6">Добавьте треки выше</small></div>';
+    modalPlaylist.innerHTML = '<div style="color:rgba(255,255,255,0.4);text-align:center;padding:40px 20px;font-family:Rajdhani;font-size:1.1rem;">🎵 Плейлист пуст<br><small style="opacity:0.6">Добавьте треки выше</small></div>';
     return;
   }
   
@@ -1266,7 +1304,6 @@ function renderPlaylist() {
 function toggleTrack(index) {
   if (index < 0 || index >= playlist.length) return;
   
-  // Если этот трек уже играет — ставим на паузу
   if (index === currentTrackIndex && !bgAudio.paused) {
     bgAudio.pause();
     renderPlaylist();
@@ -1274,7 +1311,6 @@ function toggleTrack(index) {
     return;
   }
   
-  // Если этот трек уже на паузе — продолжаем
   if (index === currentTrackIndex && bgAudio.paused) {
     bgAudio.play().then(() => {
       renderPlaylist();
@@ -1285,7 +1321,6 @@ function toggleTrack(index) {
     return;
   }
   
-  // Иначе — запускаем новый трек
   playTrack(index);
 }
 
@@ -1412,48 +1447,51 @@ modalVolumeSlider.addEventListener('input', () => {
 });
 
 // ====== ФОН ======
-bgInput.addEventListener('change', (e) => {
+bgInput.addEventListener('change', async (e) => {
   const file = e.target.files[0];
   if (!file) return;
   
-  const reader = new FileReader();
-  
-  reader.onload = function(event) {
-    const dataUrl = event.target.result;
+  try {
+    const arrayBuffer = await file.arrayBuffer();
     const isVideo = file.type.startsWith('video/');
     
     if (isVideo) {
-      bgVideo.src = dataUrl;
+      const blob = new Blob([arrayBuffer], { type: file.type });
+      const url = URL.createObjectURL(blob);
+      bgVideo.src = url;
       bgVideo.style.display = 'block';
       bgImage.style.display = 'none';
       bgVideo.play();
-      bgPreview.innerHTML = `<video src="${dataUrl}" autoplay muted loop></video>`;
+      bgPreview.innerHTML = `<video src="${url}" autoplay muted loop></video>`;
     } else {
-      bgImage.src = dataUrl;
+      const blob = new Blob([arrayBuffer], { type: file.type });
+      const url = URL.createObjectURL(blob);
+      bgImage.src = url;
       bgImage.style.display = 'block';
       bgVideo.style.display = 'none';
-      bgPreview.innerHTML = `<img src="${dataUrl}">`;
+      bgPreview.innerHTML = `<img src="${url}">`;
     }
     
     bgPreview.classList.add('visible');
-    localStorage.setItem('timer_bgType', file.type);
-    localStorage.setItem('timer_bgData', dataUrl);
-    bgInput.value = '';
-  };
+    await saveBackgroundToDB(file.type, arrayBuffer);
+    showStatus('✅ Фон установлен');
+    
+  } catch (err) {
+    console.error('Ошибка:', err);
+    showStatus('❌ Ошибка сохранения фона');
+  }
   
-  reader.onerror = () => showStatus('❌ Ошибка чтения файла');
-  reader.readAsDataURL(file);
+  e.target.value = '';
 });
 
-removeBgBtn.addEventListener('click', () => {
+removeBgBtn.addEventListener('click', async () => {
   bgVideo.style.display = 'none';
   bgImage.style.display = 'none';
   bgVideo.src = '';
   bgImage.src = '';
   bgPreview.classList.remove('visible');
   bgPreview.innerHTML = '';
-  localStorage.removeItem('timer_bgType');
-  localStorage.removeItem('timer_bgData');
+  await deleteBackgroundFromDB();
   showStatus('🗑 Фон удалён');
 });
 
@@ -1485,25 +1523,33 @@ function loadSavedSettings() {
     bgAudio.volume = savedVolume / 100;
   }
   
-  // Загрузка фона
-  const bgType = localStorage.getItem('timer_bgType');
-  const bgData = localStorage.getItem('timer_bgData');
-  if (bgType && bgData) {
-    if (bgType.startsWith('video/')) {
-      bgVideo.src = bgData;
-      bgVideo.style.display = 'block';
-      bgVideo.play();
-      bgPreview.innerHTML = `<video src="${bgData}" autoplay muted loop></video>`;
-    } else {
-      bgImage.src = bgData;
-      bgImage.style.display = 'block';
-      bgPreview.innerHTML = `<img src="${bgData}">`;
+  timeLeft = intervals[timerCurrentIndex];
+  totalTime = intervals[timerCurrentIndex];
+}
+
+async function loadBackground() {
+  try {
+    const bg = await loadBackgroundFromDB();
+    if (bg && bg.data) {
+      if (bg.type.startsWith('video/')) {
+        const blob = new Blob([bg.data], { type: bg.type });
+        const url = URL.createObjectURL(blob);
+        bgVideo.src = url;
+        bgVideo.style.display = 'block';
+        bgVideo.play();
+        bgPreview.innerHTML = `<video src="${url}" autoplay muted loop></video>`;
+      } else if (bg.type.startsWith('image/')) {
+        const blob = new Blob([bg.data], { type: bg.type });
+        const url = URL.createObjectURL(blob);
+        bgImage.src = url;
+        bgImage.style.display = 'block';
+        bgPreview.innerHTML = `<img src="${url}">`;
+      }
+      bgPreview.classList.add('visible');
     }
-    bgPreview.classList.add('visible');
+  } catch (err) {
+    console.error('Ошибка загрузки фона:', err);
   }
-  
-  timeLeft = intervals[currentIndex];
-  totalTime = intervals[currentIndex];
 }
 
 // ====== ИНИЦИАЛИЗАЦИЯ ======
@@ -1513,12 +1559,15 @@ function loadSavedSettings() {
     playlist = await loadAllTracks();
     console.log('Загружено треков:', playlist.length);
     loadSavedSettings();
+    await loadBackground();
     renderPlaylist();
     updateDisplay();
+    showStatus('✅ Приложение готово');
   } catch (err) {
     console.error('Ошибка инициализации:', err);
     loadSavedSettings();
     updateDisplay();
+    showStatus('⚠️ Ошибка при запуске');
   }
 })();
 </script>
