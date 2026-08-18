@@ -60,11 +60,8 @@
     z-index: 1;
   }
   
-  .settings-toggle {
+  .settings-toggle, .playlist-toggle {
     position: fixed;
-    top: 20px;
-    right: 20px;
-    z-index: 100;
     padding: 10px 20px;
     background: rgba(255, 255, 255, 0.05);
     border: 1px solid rgba(255, 255, 255, 0.15);
@@ -77,9 +74,13 @@
     font-weight: 600;
     letter-spacing: 1.5px;
     transition: all 0.3s ease;
+    z-index: 100;
   }
   
-  .settings-toggle:hover {
+  .settings-toggle { top: 20px; right: 20px; }
+  .playlist-toggle { top: 20px; right: 200px; }
+  
+  .settings-toggle:hover, .playlist-toggle:hover {
     background: rgba(255, 255, 255, 0.15);
     transform: translateY(-2px);
   }
@@ -102,16 +103,14 @@
   
   .settings-panel.open { right: 0; }
   
-  .settings-panel::-webkit-scrollbar { width: 6px; }
-  .settings-panel::-webkit-scrollbar-track { background: transparent; }
-  .settings-panel::-webkit-scrollbar-thumb {
+  .settings-panel::-webkit-scrollbar, .modal-playlist::-webkit-scrollbar { width: 6px; }
+  .settings-panel::-webkit-scrollbar-track, .modal-playlist::-webkit-scrollbar-track { background: transparent; }
+  .settings-panel::-webkit-scrollbar-thumb, .modal-playlist::-webkit-scrollbar-thumb {
     background: rgba(255, 255, 255, 0.2);
     border-radius: 3px;
   }
   
-  .settings-section {
-    margin-bottom: 30px;
-  }
+  .settings-section { margin-bottom: 30px; }
   
   .settings-title {
     color: #fff;
@@ -327,38 +326,95 @@
     box-shadow: 0 0 15px var(--primary);
   }
   
-  .music-name {
-    color: rgba(255, 255, 255, 0.6);
-    font-family: 'Rajdhani', sans-serif;
-    font-size: 0.9rem;
-    font-weight: 500;
-    text-align: center;
-    font-style: italic;
-    min-height: 20px;
-    letter-spacing: 0.5px;
+  /* ====== МОДАЛЬНОЕ ОКНО ПЛЕЙЛИСТА ====== */
+  .modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(5px);
+    z-index: 200;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.3s ease;
   }
   
-  /* ====== ПЛЕЙЛИСТ ====== */
+  .modal-overlay.visible {
+    display: flex;
+    opacity: 1;
+  }
+  
+  .modal-playlist {
+    background: rgba(10, 14, 39, 0.98);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 20px;
+    padding: 30px;
+    width: 90%;
+    max-width: 500px;
+    max-height: 70vh;
+    box-shadow: 0 30px 80px rgba(0, 0, 0, 0.6);
+    transform: scale(0.9);
+    transition: transform 0.3s ease;
+  }
+  
+  .modal-overlay.visible .modal-playlist {
+    transform: scale(1);
+  }
+  
+  .modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+  }
+  
+  .modal-title {
+    color: #fff;
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 1.5rem;
+    font-weight: 700;
+    letter-spacing: 2px;
+  }
+  
+  .modal-close {
+    width: 35px;
+    height: 35px;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 50%;
+    color: #fff;
+    font-size: 1.5rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .modal-close:hover {
+    background: rgba(255, 60, 60, 0.3);
+    border-color: rgba(255, 60, 60, 0.5);
+    transform: rotate(90deg);
+  }
+  
   .playlist {
     display: flex;
     flex-direction: column;
     gap: 8px;
-    max-height: 250px;
+    max-height: 400px;
     overflow-y: auto;
     padding-right: 5px;
-  }
-  
-  .playlist::-webkit-scrollbar { width: 4px; }
-  .playlist::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.2);
-    border-radius: 2px;
   }
   
   .playlist-item {
     display: flex;
     align-items: center;
     gap: 10px;
-    padding: 10px 14px;
+    padding: 12px 14px;
     background: rgba(255, 255, 255, 0.04);
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 10px;
@@ -379,7 +435,7 @@
     flex: 1;
     color: rgba(255, 255, 255, 0.8);
     font-family: 'Rajdhani', sans-serif;
-    font-size: 0.95rem;
+    font-size: 1rem;
     font-weight: 500;
     letter-spacing: 0.5px;
     white-space: nowrap;
@@ -388,7 +444,7 @@
   }
   
   .playlist-item-btn {
-    padding: 6px 10px;
+    padding: 8px 12px;
     background: rgba(255, 255, 255, 0.08);
     border: 1px solid rgba(255, 255, 255, 0.15);
     border-radius: 8px;
@@ -431,6 +487,37 @@
   }
   
   .bg-preview.visible { display: block; }
+  
+  .bg-controls {
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
+  }
+  
+  .bg-controls .file-input-wrapper {
+    flex: 1;
+  }
+  
+  .remove-bg-btn {
+    padding: 14px 20px;
+    background: rgba(255, 60, 60, 0.15);
+    border: 1px solid rgba(255, 60, 60, 0.3);
+    border-radius: 12px;
+    color: #ff6b6b;
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 1rem;
+    font-weight: 600;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    white-space: nowrap;
+  }
+  
+  .remove-bg-btn:hover {
+    background: rgba(255, 60, 60, 0.3);
+    border-color: rgba(255, 60, 60, 0.5);
+    color: #fff;
+  }
   
   .container {
     position: relative;
@@ -608,6 +695,7 @@
     .container { padding: 40px 30px; }
     .timer { font-size: 5rem; }
     .settings-panel { width: 100%; right: -100%; }
+    .playlist-toggle { right: 160px; }
   }
 </style>
 </head>
@@ -618,6 +706,23 @@
 <canvas id="particles"></canvas>
 
 <button class="settings-toggle" id="settingsToggle">⚙ Настройки</button>
+<button class="playlist-toggle" id="playlistToggle">🎵 Плейлист</button>
+
+<!-- МОДАЛЬНОЕ ОКНО ПЛЕЙЛИСТА -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal-playlist">
+    <div class="modal-header">
+      <div class="modal-title">🎵 Мой плейлист</div>
+      <button class="modal-close" id="modalClose">×</button>
+    </div>
+    <div class="file-input-wrapper" style="margin-bottom: 15px;">
+      <input type="file" id="modalMusicInput" accept="audio/*" multiple>
+      <div class="file-input-label">🎵 Добавить треки (можно несколько)</div>
+    </div>
+    <div class="playlist" id="modalPlaylist"></div>
+    <input type="range" class="volume-slider" id="modalVolumeSlider" min="0" max="100" value="50">
+  </div>
+</div>
 
 <div class="settings-panel" id="settingsPanel">
   <div class="settings-section">
@@ -653,20 +758,21 @@
   </div>
   
   <div class="settings-section">
-    <div class="settings-title">Фоновая музыка (плейлист)</div>
-    <div class="file-input-wrapper">
-      <input type="file" id="bgMusicInput" accept="audio/*" multiple>
-      <div class="file-input-label">🎵 Добавить треки (можно несколько)</div>
+    <div class="settings-title">Фоновая музыка</div>
+    <div style="color:rgba(255,255,255,0.5);font-family:'Rajdhani';font-size:0.95rem;margin-bottom:10px;">
+      Откройте плейлист для управления музыкой →
     </div>
-    <div class="playlist" id="playlist"></div>
     <input type="range" class="volume-slider" id="volumeSlider" min="0" max="100" value="50">
   </div>
   
   <div class="settings-section">
     <div class="settings-title">Фон (фото или видео)</div>
-    <div class="file-input-wrapper">
-      <input type="file" id="bgInput" accept="image/*,video/*">
-      <div class="file-input-label">️ Установить фон</div>
+    <div class="bg-controls">
+      <div class="file-input-wrapper">
+        <input type="file" id="bgInput" accept="image/*,video/*">
+        <div class="file-input-label">📁 Установить фон</div>
+      </div>
+      <button class="remove-bg-btn" id="removeBgBtn">✕ Убрать</button>
     </div>
     <div class="bg-preview" id="bgPreview"></div>
   </div>
@@ -764,6 +870,17 @@ async function loadBgMedia() {
   });
 }
 
+async function deleteBgMedia() {
+  const db = await openDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction('bgMedia', 'readwrite');
+    const store = tx.objectStore('bgMedia');
+    const request = store.delete('current');
+    request.onsuccess = () => resolve();
+    request.onerror = () => reject(request.error);
+  });
+}
+
 // ====== ТЕМЫ ======
 const themes = {
   cosmic: { primary: '#667eea', secondary: '#764ba2', accent: '#f093fb', bg1: '#1a1a3e', bg2: '#2d1b4e' },
@@ -805,13 +922,13 @@ function applyTheme(name) {
 const melodies = [
   { name: '🔔 Колокол', type: 'sine', notes: [440, 554.37, 659.25, 880], duration: 0.6 },
   { name: '🎹 Пианино', type: 'triangle', notes: [261.63, 329.63, 392, 523.25], duration: 0.5 },
-  { name: '🎸 Синтез', type: 'sine', notes: [220, 277.18, 329.63, 440], duration: 0.45 },
+  { name: ' Синтез', type: 'sine', notes: [220, 277.18, 329.63, 440], duration: 0.45 },
   { name: '🎺 Фанфары', type: 'triangle', notes: [196, 261.63, 329.63, 392, 523.25], duration: 0.4 },
-  { name: '🎻 Орган', type: 'sine', notes: [130.81, 164.81, 196, 261.63], duration: 0.7 },
+  { name: ' Орган', type: 'sine', notes: [130.81, 164.81, 196, 261.63], duration: 0.7 },
   { name: '🎼 Арпеджио', type: 'triangle', notes: [196, 246.94, 293.66, 392, 493.88], duration: 0.35 },
   { name: '🌊 Волна', type: 'sine', notes: [220, 261.63, 329.63, 261.63, 220], duration: 0.5 },
   { name: '✨ Звёзды', type: 'sine', notes: [523.25, 659.25, 783.99, 659.25, 523.25], duration: 0.4 },
-  { name: '🌙 Луна', type: 'triangle', notes: [174.61, 220, 261.63, 349.23], duration: 0.55 },
+  { name: ' Луна', type: 'triangle', notes: [174.61, 220, 261.63, 349.23], duration: 0.55 },
   { name: '☀️ Солнце', type: 'sine', notes: [261.63, 329.63, 392, 523.25, 659.25], duration: 0.45 }
 ];
 
@@ -931,11 +1048,16 @@ const restInput = document.getElementById('restInterval');
 const manualCheckbox = document.getElementById('manualMode');
 const settingsToggle = document.getElementById('settingsToggle');
 const settingsPanel = document.getElementById('settingsPanel');
+const playlistToggle = document.getElementById('playlistToggle');
 const bgAudio = document.getElementById('bgAudio');
-const bgMusicInput = document.getElementById('bgMusicInput');
 const volumeSlider = document.getElementById('volumeSlider');
-const playlistEl = document.getElementById('playlist');
+const modalVolumeSlider = document.getElementById('modalVolumeSlider');
+const modalOverlay = document.getElementById('modalOverlay');
+const modalClose = document.getElementById('modalClose');
+const modalPlaylist = document.getElementById('modalPlaylist');
+const modalMusicInput = document.getElementById('modalMusicInput');
 const bgInput = document.getElementById('bgInput');
+const removeBgBtn = document.getElementById('removeBgBtn');
 const bgVideo = document.getElementById('bgVideo');
 const bgImage = document.getElementById('bgImage');
 const bgPreview = document.getElementById('bgPreview');
@@ -1095,14 +1217,14 @@ Object.keys(themes).forEach(name => {
   themeGrid.appendChild(btn);
 });
 
-// ====== ПЛЕЙЛИСТ ======
+// ====== ПЛЕЙЛИСТ (МОДАЛЬНОЕ ОКНО) ======
 let playlist = [];
 let currentTrackIndex = -1;
 
 function renderPlaylist() {
-  playlistEl.innerHTML = '';
+  modalPlaylist.innerHTML = '';
   if (playlist.length === 0) {
-    playlistEl.innerHTML = '<div style="color:rgba(255,255,255,0.4);text-align:center;padding:15px;font-family:Rajdhani;font-size:0.9rem;">Плейлист пуст</div>';
+    modalPlaylist.innerHTML = '<div style="color:rgba(255,255,255,0.4);text-align:center;padding:20px;font-family:Rajdhani;font-size:1rem;">Плейлист пуст<br><small>Добавьте треки</small></div>';
     return;
   }
   playlist.forEach((track, i) => {
@@ -1112,16 +1234,25 @@ function renderPlaylist() {
     const name = document.createElement('div');
     name.className = 'playlist-item-name';
     name.textContent = track.name;
+    name.title = track.name;
     
     const playBtn = document.createElement('button');
     playBtn.className = 'playlist-item-btn' + (i === currentTrackIndex && !bgAudio.paused ? ' playing' : '');
-    playBtn.textContent = i === currentTrackIndex && !bgAudio.paused ? '' : '▶';
-    playBtn.addEventListener('click', () => playTrack(i));
+    playBtn.textContent = i === currentTrackIndex && !bgAudio.paused ? '⏸' : '▶';
+    playBtn.addEventListener('click', () => {
+      if (i === currentTrackIndex && !bgAudio.paused) {
+        bgAudio.pause();
+      } else {
+        playTrack(i);
+      }
+      renderPlaylist();
+    });
     
     const deleteBtn = document.createElement('button');
     deleteBtn.className = 'playlist-item-btn delete';
     deleteBtn.textContent = '✕';
-    deleteBtn.addEventListener('click', async () => {
+    deleteBtn.addEventListener('click', async (e) => {
+      e.stopPropagation();
       await deleteTrack(track.id);
       playlist = playlist.filter(t => t.id !== track.id);
       if (currentTrackIndex === i) {
@@ -1137,7 +1268,7 @@ function renderPlaylist() {
     item.appendChild(name);
     item.appendChild(playBtn);
     item.appendChild(deleteBtn);
-    playlistEl.appendChild(item);
+    modalPlaylist.appendChild(item);
   });
 }
 
@@ -1147,37 +1278,70 @@ function playTrack(index) {
   const blob = new Blob([track.data], { type: track.type });
   const url = URL.createObjectURL(blob);
   bgAudio.src = url;
-  bgAudio.volume = volumeSlider.value / 100;
-  bgAudio.play();
-  currentTrackIndex = index;
-  renderPlaylist();
+  bgAudio.volume = (modalVolumeSlider.value || volumeSlider.value) / 100;
+  bgAudio.play().then(() => {
+    currentTrackIndex = index;
+    renderPlaylist();
+  }).catch(e => console.error('Error playing:', e));
 }
 
 bgAudio.addEventListener('ended', () => {
-  if (currentTrackIndex < playlist.length - 1) {
-    playTrack(currentTrackIndex + 1);
-  } else {
-    playTrack(0); // зацикливание плейлиста
+  if (playlist.length > 0) {
+    const nextIndex = (currentTrackIndex + 1) % playlist.length;
+    playTrack(nextIndex);
   }
 });
 
-bgMusicInput.addEventListener('change', async (e) => {
-  const files = Array.from(e.target.files);
-  for (const file of files) {
-    const arrayBuffer = await file.arrayBuffer();
-    const id = await addTrack(file.name, arrayBuffer, file.type);
-    playlist.push({ id, name: file.name, data: arrayBuffer, type: file.type });
+// Открытие модального окна
+playlistToggle.addEventListener('click', () => {
+  modalOverlay.classList.add('visible');
+  renderPlaylist();
+});
+
+// Закрытие модального окна
+modalClose.addEventListener('click', () => {
+  modalOverlay.classList.remove('visible');
+});
+
+modalOverlay.addEventListener('click', (e) => {
+  if (e.target === modalOverlay) {
+    modalOverlay.classList.remove('visible');
   }
+});
+
+// Добавление музыки через модальное окно
+modalMusicInput.addEventListener('change', async (e) => {
+  const files = Array.from(e.target.files);
+  if (files.length === 0) return;
+  
+  for (const file of files) {
+    try {
+      const arrayBuffer = await file.arrayBuffer();
+      const id = await addTrack(file.name, arrayBuffer, file.type);
+      playlist.push({ id, name: file.name, data: arrayBuffer, type: file.type });
+    } catch (err) {
+      console.error('Error adding track:', err);
+    }
+  }
+  
   renderPlaylist();
   if (currentTrackIndex === -1 && playlist.length > 0) {
     playTrack(0);
   }
-  bgMusicInput.value = '';
+  modalMusicInput.value = '';
 });
 
+// Синхронизация громкости
 volumeSlider.addEventListener('input', () => {
   bgAudio.volume = volumeSlider.value / 100;
+  modalVolumeSlider.value = volumeSlider.value;
   localStorage.setItem('timer_volume', volumeSlider.value);
+});
+
+modalVolumeSlider.addEventListener('input', () => {
+  bgAudio.volume = modalVolumeSlider.value / 100;
+  volumeSlider.value = modalVolumeSlider.value;
+  localStorage.setItem('timer_volume', modalVolumeSlider.value);
 });
 
 // ====== ФОН ======
@@ -1214,6 +1378,17 @@ bgInput.addEventListener('change', async (e) => {
   bgInput.value = '';
 });
 
+// Удаление фона
+removeBgBtn.addEventListener('click', async () => {
+  bgVideo.style.display = 'none';
+  bgImage.style.display = 'none';
+  bgVideo.src = '';
+  bgImage.src = '';
+  bgPreview.classList.remove('visible');
+  bgPreview.innerHTML = '';
+  await deleteBgMedia();
+});
+
 // ====== ЗАГРУЗКА СОХРАНЁННЫХ НАСТРОЕК ======
 function loadSavedSettings() {
   const savedTheme = localStorage.getItem('timer_theme');
@@ -1238,6 +1413,7 @@ function loadSavedSettings() {
   }
   if (savedVolume) {
     volumeSlider.value = savedVolume;
+    modalVolumeSlider.value = savedVolume;
     bgAudio.volume = savedVolume / 100;
   }
   
@@ -1245,7 +1421,7 @@ function loadSavedSettings() {
   totalTime = intervals[currentIndex];
 }
 
-async function loadSavedMedia() {
+async function loadSavedData() {
   // Загрузка плейлиста
   try {
     playlist = await getAllTracks();
@@ -1280,7 +1456,7 @@ async function loadSavedMedia() {
 
 // ====== ИНИЦИАЛИЗАЦИЯ ======
 loadSavedSettings();
-loadSavedMedia();
+loadSavedData();
 updateDisplay();
 </script>
 
