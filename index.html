@@ -5,7 +5,7 @@
 <title>Premium Timer Pro</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@300;400;500;600;700&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
   :root {
     --primary: #667eea;
@@ -27,6 +27,28 @@
     overflow: hidden;
     position: relative;
     transition: background 0.8s ease;
+  }
+  
+  #bgVideo {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    z-index: 0;
+    display: none;
+  }
+  
+  #bgImage {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    z-index: 0;
+    display: none;
   }
   
   #particles {
@@ -187,8 +209,6 @@
     cursor: pointer;
     border: 2px solid transparent;
     transition: all 0.3s ease;
-    position: relative;
-    overflow: hidden;
   }
   
   .theme-btn:hover {
@@ -230,9 +250,7 @@
     transition: all 0.3s ease;
   }
   
-  .checkbox-group:hover {
-    background: rgba(255, 255, 255, 0.1);
-  }
+  .checkbox-group:hover { background: rgba(255, 255, 255, 0.1); }
   
   .checkbox-group input[type="checkbox"] {
     width: 20px;
@@ -248,12 +266,6 @@
     font-weight: 500;
     cursor: pointer;
     letter-spacing: 0.5px;
-  }
-  
-  .music-section {
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
   }
   
   .file-input-wrapper {
@@ -295,37 +307,14 @@
     color: #fff;
   }
   
-  .music-controls {
-    display: flex;
-    gap: 10px;
-    align-items: center;
-  }
-  
-  .music-btn {
-    padding: 10px 18px;
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.15);
-    border-radius: 10px;
-    color: #fff;
-    cursor: pointer;
-    font-family: 'Rajdhani', sans-serif;
-    font-size: 0.95rem;
-    font-weight: 600;
-    letter-spacing: 1px;
-    transition: all 0.3s ease;
-  }
-  
-  .music-btn:hover {
-    background: rgba(255, 255, 255, 0.15);
-  }
-  
   .volume-slider {
-    flex: 1;
+    width: 100%;
     -webkit-appearance: none;
     height: 6px;
     background: rgba(255, 255, 255, 0.1);
     border-radius: 3px;
     outline: none;
+    margin-top: 10px;
   }
   
   .volume-slider::-webkit-slider-thumb {
@@ -348,6 +337,100 @@
     min-height: 20px;
     letter-spacing: 0.5px;
   }
+  
+  /* ====== ПЛЕЙЛИСТ ====== */
+  .playlist {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    max-height: 250px;
+    overflow-y: auto;
+    padding-right: 5px;
+  }
+  
+  .playlist::-webkit-scrollbar { width: 4px; }
+  .playlist::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 2px;
+  }
+  
+  .playlist-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    transition: all 0.3s ease;
+  }
+  
+  .playlist-item:hover {
+    background: rgba(255, 255, 255, 0.08);
+  }
+  
+  .playlist-item.active {
+    border-color: var(--primary);
+    background: rgba(0, 212, 255, 0.08);
+    box-shadow: 0 0 15px rgba(0, 212, 255, 0.15);
+  }
+  
+  .playlist-item-name {
+    flex: 1;
+    color: rgba(255, 255, 255, 0.8);
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 0.95rem;
+    font-weight: 500;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  
+  .playlist-item-btn {
+    padding: 6px 10px;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 8px;
+    color: #fff;
+    cursor: pointer;
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 600;
+    transition: all 0.2s ease;
+  }
+  
+  .playlist-item-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+  }
+  
+  .playlist-item-btn.delete:hover {
+    background: rgba(255, 60, 60, 0.3);
+    border-color: rgba(255, 60, 60, 0.5);
+  }
+  
+  .playlist-item-btn.playing {
+    background: var(--primary);
+    border-color: var(--primary);
+  }
+  
+  .bg-preview {
+    margin-top: 10px;
+    width: 100%;
+    height: 120px;
+    border-radius: 10px;
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    display: none;
+  }
+  
+  .bg-preview img, .bg-preview video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  
+  .bg-preview.visible { display: block; }
   
   .container {
     position: relative;
@@ -382,7 +465,6 @@
     letter-spacing: 8px;
     font-variant-numeric: tabular-nums;
     transition: all 0.5s ease;
-    position: relative;
   }
   
   .work .timer {
@@ -408,7 +490,6 @@
     border-radius: 10px;
     margin: 35px 0;
     overflow: hidden;
-    position: relative;
   }
   
   .progress-bar {
@@ -467,8 +548,6 @@
     box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
     border-color: var(--primary);
   }
-  
-  button.ctrl-btn:active { transform: translateY(-1px); }
   
   .next-btn {
     display: none;
@@ -534,6 +613,8 @@
 </head>
 <body>
 
+<video id="bgVideo" autoplay muted loop playsinline></video>
+<img id="bgImage" alt="">
 <canvas id="particles"></canvas>
 
 <button class="settings-toggle" id="settingsToggle">⚙ Настройки</button>
@@ -572,18 +653,22 @@
   </div>
   
   <div class="settings-section">
-    <div class="settings-title">Фоновая музыка</div>
-    <div class="music-section">
-      <div class="file-input-wrapper">
-        <input type="file" id="bgMusicInput" accept="audio/*">
-        <div class="file-input-label">🎵 Добавить мелодию (MP3, WAV...)</div>
-      </div>
-      <div class="music-name" id="musicName">Музыка не выбрана</div>
-      <div class="music-controls">
-        <button class="music-btn" id="musicPlayBtn">▶ Играть</button>
-        <input type="range" class="volume-slider" id="volumeSlider" min="0" max="100" value="50">
-      </div>
+    <div class="settings-title">Фоновая музыка (плейлист)</div>
+    <div class="file-input-wrapper">
+      <input type="file" id="bgMusicInput" accept="audio/*" multiple>
+      <div class="file-input-label">🎵 Добавить треки (можно несколько)</div>
     </div>
+    <div class="playlist" id="playlist"></div>
+    <input type="range" class="volume-slider" id="volumeSlider" min="0" max="100" value="50">
+  </div>
+  
+  <div class="settings-section">
+    <div class="settings-title">Фон (фото или видео)</div>
+    <div class="file-input-wrapper">
+      <input type="file" id="bgInput" accept="image/*,video/*">
+      <div class="file-input-label">️ Установить фон</div>
+    </div>
+    <div class="bg-preview" id="bgPreview"></div>
   </div>
 </div>
 
@@ -603,10 +688,9 @@
 <audio id="bgAudio" loop></audio>
 
 <script>
-// ====== IndexedDB для сохранения музыки ======
+// ====== IndexedDB ======
 const DB_NAME = 'TimerProDB';
-const DB_VERSION = 1;
-const STORE_NAME = 'bgMusic';
+const DB_VERSION = 2;
 
 function openDB() {
   return new Promise((resolve, reject) => {
@@ -615,43 +699,68 @@ function openDB() {
     request.onsuccess = () => resolve(request.result);
     request.onupgradeneeded = (e) => {
       const db = e.target.result;
-      if (!db.objectStoreNames.contains(STORE_NAME)) {
-        db.createObjectStore(STORE_NAME);
+      if (!db.objectStoreNames.contains('bgMusic')) {
+        db.createObjectStore('bgMusic', { keyPath: 'id', autoIncrement: true });
+      }
+      if (!db.objectStoreNames.contains('bgMedia')) {
+        db.createObjectStore('bgMedia');
       }
     };
   });
 }
 
-async function saveMusicToDB(name, arrayBuffer) {
+async function addTrack(name, arrayBuffer, type) {
   const db = await openDB();
   return new Promise((resolve, reject) => {
-    const tx = db.transaction(STORE_NAME, 'readwrite');
-    const store = tx.objectStore(STORE_NAME);
-    store.put({ name, data: arrayBuffer }, 'current');
-    tx.oncomplete = () => resolve();
-    tx.onerror = () => reject(tx.error);
-  });
-}
-
-async function loadMusicFromDB() {
-  const db = await openDB();
-  return new Promise((resolve, reject) => {
-    const tx = db.transaction(STORE_NAME, 'readonly');
-    const store = tx.objectStore(STORE_NAME);
-    const request = store.get('current');
+    const tx = db.transaction('bgMusic', 'readwrite');
+    const store = tx.objectStore('bgMusic');
+    const request = store.add({ name, data: arrayBuffer, type });
     request.onsuccess = () => resolve(request.result);
     request.onerror = () => reject(request.error);
   });
 }
 
-async function deleteMusicFromDB() {
+async function getAllTracks() {
   const db = await openDB();
   return new Promise((resolve, reject) => {
-    const tx = db.transaction(STORE_NAME, 'readwrite');
-    const store = tx.objectStore(STORE_NAME);
-    store.delete('current');
+    const tx = db.transaction('bgMusic', 'readonly');
+    const store = tx.objectStore('bgMusic');
+    const request = store.getAll();
+    request.onsuccess = () => resolve(request.result);
+    request.onerror = () => reject(request.error);
+  });
+}
+
+async function deleteTrack(id) {
+  const db = await openDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction('bgMusic', 'readwrite');
+    const store = tx.objectStore('bgMusic');
+    const request = store.delete(id);
+    request.onsuccess = () => resolve();
+    request.onerror = () => reject(request.error);
+  });
+}
+
+async function saveBgMedia(type, arrayBuffer) {
+  const db = await openDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction('bgMedia', 'readwrite');
+    const store = tx.objectStore('bgMedia');
+    store.put({ type, data: arrayBuffer }, 'current');
     tx.oncomplete = () => resolve();
     tx.onerror = () => reject(tx.error);
+  });
+}
+
+async function loadBgMedia() {
+  const db = await openDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction('bgMedia', 'readonly');
+    const store = tx.objectStore('bgMedia');
+    const request = store.get('current');
+    request.onsuccess = () => resolve(request.result);
+    request.onerror = () => reject(request.error);
   });
 }
 
@@ -692,15 +801,15 @@ function applyTheme(name) {
   localStorage.setItem('timer_theme', name);
 }
 
-// ====== МЕЛОДИИ (мягкие, приятные) ======
+// ====== МЕЛОДИИ ======
 const melodies = [
   { name: '🔔 Колокол', type: 'sine', notes: [440, 554.37, 659.25, 880], duration: 0.6 },
   { name: '🎹 Пианино', type: 'triangle', notes: [261.63, 329.63, 392, 523.25], duration: 0.5 },
-  { name: ' Синтез', type: 'sine', notes: [220, 277.18, 329.63, 440], duration: 0.45 },
+  { name: '🎸 Синтез', type: 'sine', notes: [220, 277.18, 329.63, 440], duration: 0.45 },
   { name: '🎺 Фанфары', type: 'triangle', notes: [196, 261.63, 329.63, 392, 523.25], duration: 0.4 },
-  { name: ' Орган', type: 'sine', notes: [130.81, 164.81, 196, 261.63], duration: 0.7 },
+  { name: '🎻 Орган', type: 'sine', notes: [130.81, 164.81, 196, 261.63], duration: 0.7 },
   { name: '🎼 Арпеджио', type: 'triangle', notes: [196, 246.94, 293.66, 392, 493.88], duration: 0.35 },
-  { name: ' Волна', type: 'sine', notes: [220, 261.63, 329.63, 261.63, 220], duration: 0.5 },
+  { name: '🌊 Волна', type: 'sine', notes: [220, 261.63, 329.63, 261.63, 220], duration: 0.5 },
   { name: '✨ Звёзды', type: 'sine', notes: [523.25, 659.25, 783.99, 659.25, 523.25], duration: 0.4 },
   { name: '🌙 Луна', type: 'triangle', notes: [174.61, 220, 261.63, 349.23], duration: 0.55 },
   { name: '☀️ Солнце', type: 'sine', notes: [261.63, 329.63, 392, 523.25, 659.25], duration: 0.45 }
@@ -708,7 +817,6 @@ const melodies = [
 
 let currentMelody = 0;
 
-// ====== АУДИО КОНТЕКСТ ======
 const audioContext = new (window.AudioContext || window.webkitAudioContext)();
 
 function playMelody(melodyIndex) {
@@ -718,7 +826,6 @@ function playMelody(melodyIndex) {
   m.notes.forEach((freq, i) => {
     const startTime = now + i * 0.2;
     
-    // Основной осциллятор (мягкий)
     const osc1 = audioContext.createOscillator();
     const gain1 = audioContext.createGain();
     osc1.connect(gain1);
@@ -726,7 +833,6 @@ function playMelody(melodyIndex) {
     osc1.frequency.value = freq;
     osc1.type = m.type;
     
-    // Лёгкая гармоника для объёма (тише)
     const osc2 = audioContext.createOscillator();
     const gain2 = audioContext.createGain();
     osc2.connect(gain2);
@@ -734,7 +840,6 @@ function playMelody(melodyIndex) {
     osc2.frequency.value = freq * 1.5;
     osc2.type = 'sine';
     
-    // ADSR огибающая — плавная атака и затухание
     const attackTime = 0.05;
     const decayTime = 0.1;
     const sustainLevel = 0.4;
@@ -828,9 +933,12 @@ const settingsToggle = document.getElementById('settingsToggle');
 const settingsPanel = document.getElementById('settingsPanel');
 const bgAudio = document.getElementById('bgAudio');
 const bgMusicInput = document.getElementById('bgMusicInput');
-const musicPlayBtn = document.getElementById('musicPlayBtn');
 const volumeSlider = document.getElementById('volumeSlider');
-const musicName = document.getElementById('musicName');
+const playlistEl = document.getElementById('playlist');
+const bgInput = document.getElementById('bgInput');
+const bgVideo = document.getElementById('bgVideo');
+const bgImage = document.getElementById('bgImage');
+const bgPreview = document.getElementById('bgPreview');
 
 function formatTime(sec) {
   const m = String(Math.floor(sec / 60)).padStart(2, '0');
@@ -866,11 +974,8 @@ function stopRinging() {
 function switchMode() {
   stopRinging();
   startRinging();
-  
   if (!manualMode) {
-    setTimeout(() => {
-      doSwitch();
-    }, 2000);
+    setTimeout(() => doSwitch(), 2000);
   }
 }
 
@@ -952,18 +1057,16 @@ function updateIntervals() {
 workInput.addEventListener('change', updateIntervals);
 restInput.addEventListener('change', updateIntervals);
 
-// ====== РУЧНОЙ РЕЖИМ ======
 manualCheckbox.addEventListener('change', () => {
   manualMode = manualCheckbox.checked;
   localStorage.setItem('timer_manual', manualMode);
 });
 
-// ====== НАСТРОЙКИ ПАНЕЛЬ ======
 settingsToggle.addEventListener('click', () => {
   settingsPanel.classList.toggle('open');
 });
 
-// ====== МЕЛОДИИ КНОПКИ ======
+// ====== МЕЛОДИИ ======
 const melodyGrid = document.getElementById('melodyGrid');
 melodies.forEach((m, i) => {
   const btn = document.createElement('button');
@@ -981,7 +1084,7 @@ melodies.forEach((m, i) => {
   melodyGrid.appendChild(btn);
 });
 
-// ====== ТЕМЫ КНОПКИ ======
+// ====== ТЕМЫ ======
 const themeGrid = document.getElementById('themeGrid');
 Object.keys(themes).forEach(name => {
   const btn = document.createElement('div');
@@ -992,56 +1095,123 @@ Object.keys(themes).forEach(name => {
   themeGrid.appendChild(btn);
 });
 
-// ====== ФОНОВАЯ МУЗЫКА С СОХРАНЕНИЕМ ======
-let musicPlaying = false;
+// ====== ПЛЕЙЛИСТ ======
+let playlist = [];
+let currentTrackIndex = -1;
 
-async function loadSavedMusic() {
-  try {
-    const saved = await loadMusicFromDB();
-    if (saved && saved.data) {
-      const blob = new Blob([saved.data], { type: 'audio/mpeg' });
-      const url = URL.createObjectURL(blob);
-      bgAudio.src = url;
-      musicName.textContent = '🎵 ' + saved.name;
-      bgAudio.volume = volumeSlider.value / 100;
-    }
-  } catch (e) {
-    console.log('Нет сохранённой музыки');
+function renderPlaylist() {
+  playlistEl.innerHTML = '';
+  if (playlist.length === 0) {
+    playlistEl.innerHTML = '<div style="color:rgba(255,255,255,0.4);text-align:center;padding:15px;font-family:Rajdhani;font-size:0.9rem;">Плейлист пуст</div>';
+    return;
   }
+  playlist.forEach((track, i) => {
+    const item = document.createElement('div');
+    item.className = 'playlist-item' + (i === currentTrackIndex ? ' active' : '');
+    
+    const name = document.createElement('div');
+    name.className = 'playlist-item-name';
+    name.textContent = track.name;
+    
+    const playBtn = document.createElement('button');
+    playBtn.className = 'playlist-item-btn' + (i === currentTrackIndex && !bgAudio.paused ? ' playing' : '');
+    playBtn.textContent = i === currentTrackIndex && !bgAudio.paused ? '' : '▶';
+    playBtn.addEventListener('click', () => playTrack(i));
+    
+    const deleteBtn = document.createElement('button');
+    deleteBtn.className = 'playlist-item-btn delete';
+    deleteBtn.textContent = '✕';
+    deleteBtn.addEventListener('click', async () => {
+      await deleteTrack(track.id);
+      playlist = playlist.filter(t => t.id !== track.id);
+      if (currentTrackIndex === i) {
+        bgAudio.pause();
+        bgAudio.src = '';
+        currentTrackIndex = -1;
+      } else if (currentTrackIndex > i) {
+        currentTrackIndex--;
+      }
+      renderPlaylist();
+    });
+    
+    item.appendChild(name);
+    item.appendChild(playBtn);
+    item.appendChild(deleteBtn);
+    playlistEl.appendChild(item);
+  });
 }
 
-bgMusicInput.addEventListener('change', async (e) => {
-  const file = e.target.files[0];
-  if (file) {
-    const arrayBuffer = await file.arrayBuffer();
-    await saveMusicToDB(file.name, arrayBuffer);
-    const blob = new Blob([arrayBuffer], { type: file.type });
-    const url = URL.createObjectURL(blob);
-    bgAudio.src = url;
-    musicName.textContent = '🎵 ' + file.name;
-    bgAudio.volume = volumeSlider.value / 100;
+function playTrack(index) {
+  if (index < 0 || index >= playlist.length) return;
+  const track = playlist[index];
+  const blob = new Blob([track.data], { type: track.type });
+  const url = URL.createObjectURL(blob);
+  bgAudio.src = url;
+  bgAudio.volume = volumeSlider.value / 100;
+  bgAudio.play();
+  currentTrackIndex = index;
+  renderPlaylist();
+}
+
+bgAudio.addEventListener('ended', () => {
+  if (currentTrackIndex < playlist.length - 1) {
+    playTrack(currentTrackIndex + 1);
+  } else {
+    playTrack(0); // зацикливание плейлиста
   }
 });
 
-musicPlayBtn.addEventListener('click', () => {
-  if (!bgAudio.src) {
-    alert('Сначала добавь музыку!');
-    return;
+bgMusicInput.addEventListener('change', async (e) => {
+  const files = Array.from(e.target.files);
+  for (const file of files) {
+    const arrayBuffer = await file.arrayBuffer();
+    const id = await addTrack(file.name, arrayBuffer, file.type);
+    playlist.push({ id, name: file.name, data: arrayBuffer, type: file.type });
   }
-  if (musicPlaying) {
-    bgAudio.pause();
-    musicPlayBtn.textContent = '▶ Играть';
-    musicPlaying = false;
-  } else {
-    bgAudio.play();
-    musicPlayBtn.textContent = '⏸ Пауза';
-    musicPlaying = true;
+  renderPlaylist();
+  if (currentTrackIndex === -1 && playlist.length > 0) {
+    playTrack(0);
   }
+  bgMusicInput.value = '';
 });
 
 volumeSlider.addEventListener('input', () => {
   bgAudio.volume = volumeSlider.value / 100;
   localStorage.setItem('timer_volume', volumeSlider.value);
+});
+
+// ====== ФОН ======
+bgInput.addEventListener('change', async (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  
+  const arrayBuffer = await file.arrayBuffer();
+  const isVideo = file.type.startsWith('video/');
+  const isImage = file.type.startsWith('image/');
+  
+  if (isVideo) {
+    const blob = new Blob([arrayBuffer], { type: file.type });
+    const url = URL.createObjectURL(blob);
+    bgVideo.src = url;
+    bgVideo.style.display = 'block';
+    bgImage.style.display = 'none';
+    bgVideo.play();
+    
+    bgPreview.innerHTML = `<video src="${url}" autoplay muted loop></video>`;
+    bgPreview.classList.add('visible');
+  } else if (isImage) {
+    const blob = new Blob([arrayBuffer], { type: file.type });
+    const url = URL.createObjectURL(blob);
+    bgImage.src = url;
+    bgImage.style.display = 'block';
+    bgVideo.style.display = 'none';
+    
+    bgPreview.innerHTML = `<img src="${url}">`;
+    bgPreview.classList.add('visible');
+  }
+  
+  await saveBgMedia(file.type, arrayBuffer);
+  bgInput.value = '';
 });
 
 // ====== ЗАГРУЗКА СОХРАНЁННЫХ НАСТРОЕК ======
@@ -1075,9 +1245,42 @@ function loadSavedSettings() {
   totalTime = intervals[currentIndex];
 }
 
+async function loadSavedMedia() {
+  // Загрузка плейлиста
+  try {
+    playlist = await getAllTracks();
+    renderPlaylist();
+  } catch (e) {
+    console.log('Нет сохранённых треков');
+  }
+  
+  // Загрузка фона
+  try {
+    const bg = await loadBgMedia();
+    if (bg && bg.data) {
+      const blob = new Blob([bg.data], { type: bg.type });
+      const url = URL.createObjectURL(blob);
+      
+      if (bg.type.startsWith('video/')) {
+        bgVideo.src = url;
+        bgVideo.style.display = 'block';
+        bgVideo.play();
+        bgPreview.innerHTML = `<video src="${url}" autoplay muted loop></video>`;
+      } else if (bg.type.startsWith('image/')) {
+        bgImage.src = url;
+        bgImage.style.display = 'block';
+        bgPreview.innerHTML = `<img src="${url}">`;
+      }
+      bgPreview.classList.add('visible');
+    }
+  } catch (e) {
+    console.log('Нет сохранённого фона');
+  }
+}
+
 // ====== ИНИЦИАЛИЗАЦИЯ ======
 loadSavedSettings();
-loadSavedMusic();
+loadSavedMedia();
 updateDisplay();
 </script>
 
