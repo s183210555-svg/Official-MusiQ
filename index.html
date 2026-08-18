@@ -333,8 +333,8 @@
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0, 0, 0, 0.7);
-    backdrop-filter: blur(5px);
+    background: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(8px);
     z-index: 200;
     display: none;
     align-items: center;
@@ -349,14 +349,14 @@
   }
   
   .modal-playlist {
-    background: rgba(10, 14, 39, 0.98);
+    background: linear-gradient(135deg, #1a1f3a 0%, #0f1429 100%);
     border: 1px solid rgba(255, 255, 255, 0.15);
     border-radius: 20px;
     padding: 30px;
     width: 90%;
-    max-width: 500px;
-    max-height: 70vh;
-    box-shadow: 0 30px 80px rgba(0, 0, 0, 0.6);
+    max-width: 550px;
+    max-height: 75vh;
+    box-shadow: 0 40px 100px rgba(0, 0, 0, 0.7);
     transform: scale(0.9);
     transition: transform 0.3s ease;
   }
@@ -369,25 +369,28 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 20px;
+    margin-bottom: 25px;
   }
   
   .modal-title {
     color: #fff;
     font-family: 'Rajdhani', sans-serif;
-    font-size: 1.5rem;
+    font-size: 1.8rem;
     font-weight: 700;
     letter-spacing: 2px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
   }
   
   .modal-close {
-    width: 35px;
-    height: 35px;
+    width: 40px;
+    height: 40px;
     background: rgba(255, 255, 255, 0.08);
     border: 1px solid rgba(255, 255, 255, 0.15);
     border-radius: 50%;
     color: #fff;
-    font-size: 1.5rem;
+    font-size: 1.8rem;
     cursor: pointer;
     transition: all 0.3s ease;
     display: flex;
@@ -404,38 +407,40 @@
   .playlist {
     display: flex;
     flex-direction: column;
-    gap: 8px;
-    max-height: 400px;
+    gap: 10px;
+    max-height: 350px;
     overflow-y: auto;
     padding-right: 5px;
+    margin-bottom: 15px;
   }
   
   .playlist-item {
     display: flex;
     align-items: center;
-    gap: 10px;
-    padding: 12px 14px;
-    background: rgba(255, 255, 255, 0.04);
+    gap: 12px;
+    padding: 14px 16px;
+    background: rgba(255, 255, 255, 0.05);
     border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 10px;
+    border-radius: 12px;
     transition: all 0.3s ease;
   }
   
   .playlist-item:hover {
     background: rgba(255, 255, 255, 0.08);
+    transform: translateX(5px);
   }
   
   .playlist-item.active {
     border-color: var(--primary);
-    background: rgba(0, 212, 255, 0.08);
-    box-shadow: 0 0 15px rgba(0, 212, 255, 0.15);
+    background: rgba(102, 126, 234, 0.15);
+    box-shadow: 0 0 20px rgba(102, 126, 234, 0.2);
   }
   
   .playlist-item-name {
     flex: 1;
-    color: rgba(255, 255, 255, 0.8);
+    color: rgba(255, 255, 255, 0.9);
     font-family: 'Rajdhani', sans-serif;
-    font-size: 1rem;
+    font-size: 1.05rem;
     font-weight: 500;
     letter-spacing: 0.5px;
     white-space: nowrap;
@@ -444,16 +449,17 @@
   }
   
   .playlist-item-btn {
-    padding: 8px 12px;
+    padding: 8px 14px;
     background: rgba(255, 255, 255, 0.08);
     border: 1px solid rgba(255, 255, 255, 0.15);
     border-radius: 8px;
     color: #fff;
     cursor: pointer;
     font-family: 'Rajdhani', sans-serif;
-    font-size: 0.85rem;
+    font-size: 0.9rem;
     font-weight: 600;
     transition: all 0.2s ease;
+    min-width: 40px;
   }
   
   .playlist-item-btn:hover {
@@ -705,7 +711,7 @@
 <img id="bgImage" alt="">
 <canvas id="particles"></canvas>
 
-<button class="settings-toggle" id="settingsToggle">⚙ Настройки</button>
+<button class="settings-toggle" id="settingsToggle"> Настройки</button>
 <button class="playlist-toggle" id="playlistToggle">🎵 Плейлист</button>
 
 <!-- МОДАЛЬНОЕ ОКНО ПЛЕЙЛИСТА -->
@@ -772,7 +778,7 @@
         <input type="file" id="bgInput" accept="image/*,video/*">
         <div class="file-input-label">📁 Установить фон</div>
       </div>
-      <button class="remove-bg-btn" id="removeBgBtn">✕ Убрать</button>
+      <button class="remove-bg-btn" id="removeBgBtn"> Убрать</button>
     </div>
     <div class="bg-preview" id="bgPreview"></div>
   </div>
@@ -791,95 +797,56 @@
   <div class="cycle" id="cycle">Цикл: 1</div>
 </div>
 
-<audio id="bgAudio" loop></audio>
+<audio id="bgAudio"></audio>
 
 <script>
-// ====== IndexedDB ======
-const DB_NAME = 'TimerProDB';
-const DB_VERSION = 2;
-
-function openDB() {
-  return new Promise((resolve, reject) => {
-    const request = indexedDB.open(DB_NAME, DB_VERSION);
-    request.onerror = () => reject(request.error);
-    request.onsuccess = () => resolve(request.result);
-    request.onupgradeneeded = (e) => {
-      const db = e.target.result;
-      if (!db.objectStoreNames.contains('bgMusic')) {
-        db.createObjectStore('bgMusic', { keyPath: 'id', autoIncrement: true });
-      }
-      if (!db.objectStoreNames.contains('bgMedia')) {
-        db.createObjectStore('bgMedia');
-      }
-    };
-  });
-}
-
-async function addTrack(name, arrayBuffer, type) {
-  const db = await openDB();
-  return new Promise((resolve, reject) => {
-    const tx = db.transaction('bgMusic', 'readwrite');
-    const store = tx.objectStore('bgMusic');
-    const request = store.add({ name, data: arrayBuffer, type });
-    request.onsuccess = () => resolve(request.result);
-    request.onerror = () => reject(request.error);
-  });
-}
-
-async function getAllTracks() {
-  const db = await openDB();
-  return new Promise((resolve, reject) => {
-    const tx = db.transaction('bgMusic', 'readonly');
-    const store = tx.objectStore('bgMusic');
-    const request = store.getAll();
-    request.onsuccess = () => resolve(request.result);
-    request.onerror = () => reject(request.error);
-  });
-}
-
-async function deleteTrack(id) {
-  const db = await openDB();
-  return new Promise((resolve, reject) => {
-    const tx = db.transaction('bgMusic', 'readwrite');
-    const store = tx.objectStore('bgMusic');
-    const request = store.delete(id);
-    request.onsuccess = () => resolve();
-    request.onerror = () => reject(request.error);
-  });
-}
-
-async function saveBgMedia(type, arrayBuffer) {
-  const db = await openDB();
-  return new Promise((resolve, reject) => {
-    const tx = db.transaction('bgMedia', 'readwrite');
-    const store = tx.objectStore('bgMedia');
-    store.put({ type, data: arrayBuffer }, 'current');
-    tx.oncomplete = () => resolve();
-    tx.onerror = () => reject(tx.error);
-  });
-}
-
-async function loadBgMedia() {
-  const db = await openDB();
-  return new Promise((resolve, reject) => {
-    const tx = db.transaction('bgMedia', 'readonly');
-    const store = tx.objectStore('bgMedia');
-    const request = store.get('current');
-    request.onsuccess = () => resolve(request.result);
-    request.onerror = () => reject(request.error);
-  });
-}
-
-async function deleteBgMedia() {
-  const db = await openDB();
-  return new Promise((resolve, reject) => {
-    const tx = db.transaction('bgMedia', 'readwrite');
-    const store = tx.objectStore('bgMedia');
-    const request = store.delete('current');
-    request.onsuccess = () => resolve();
-    request.onerror = () => reject(request.error);
-  });
-}
+// ====== ПРОСТОЕ ХРАНИЛИЩЕ (localStorage для надежности) ======
+const Storage = {
+  getPlaylist() {
+    try {
+      const data = localStorage.getItem('timer_playlist');
+      return data ? JSON.parse(data) : [];
+    } catch(e) {
+      console.error('Error loading playlist:', e);
+      return [];
+    }
+  },
+  
+  savePlaylist(playlist) {
+    try {
+      localStorage.setItem('timer_playlist', JSON.stringify(playlist));
+    } catch(e) {
+      console.error('Error saving playlist:', e);
+      alert('Не удалось сохранить плейлист. Возможно, файлы слишком большие.');
+    }
+  },
+  
+  getBgMedia() {
+    try {
+      const data = localStorage.getItem('timer_bgMedia');
+      return data ? JSON.parse(data) : null;
+    } catch(e) {
+      return null;
+    }
+  },
+  
+  saveBgMedia(type, dataUrl) {
+    try {
+      localStorage.setItem('timer_bgMedia', JSON.stringify({ type, data: dataUrl }));
+    } catch(e) {
+      console.error('Error saving bg:', e);
+      alert('Не удалось сохранить фон. Файл слишком большой.');
+    }
+  },
+  
+  deleteBgMedia() {
+    try {
+      localStorage.removeItem('timer_bgMedia');
+    } catch(e) {
+      console.error('Error deleting bg:', e);
+    }
+  }
+};
 
 // ====== ТЕМЫ ======
 const themes = {
@@ -924,11 +891,11 @@ const melodies = [
   { name: '🎹 Пианино', type: 'triangle', notes: [261.63, 329.63, 392, 523.25], duration: 0.5 },
   { name: ' Синтез', type: 'sine', notes: [220, 277.18, 329.63, 440], duration: 0.45 },
   { name: '🎺 Фанфары', type: 'triangle', notes: [196, 261.63, 329.63, 392, 523.25], duration: 0.4 },
-  { name: ' Орган', type: 'sine', notes: [130.81, 164.81, 196, 261.63], duration: 0.7 },
+  { name: '🎻 Орган', type: 'sine', notes: [130.81, 164.81, 196, 261.63], duration: 0.7 },
   { name: '🎼 Арпеджио', type: 'triangle', notes: [196, 246.94, 293.66, 392, 493.88], duration: 0.35 },
-  { name: '🌊 Волна', type: 'sine', notes: [220, 261.63, 329.63, 261.63, 220], duration: 0.5 },
+  { name: ' Волна', type: 'sine', notes: [220, 261.63, 329.63, 261.63, 220], duration: 0.5 },
   { name: '✨ Звёзды', type: 'sine', notes: [523.25, 659.25, 783.99, 659.25, 523.25], duration: 0.4 },
-  { name: ' Луна', type: 'triangle', notes: [174.61, 220, 261.63, 349.23], duration: 0.55 },
+  { name: '🌙 Луна', type: 'triangle', notes: [174.61, 220, 261.63, 349.23], duration: 0.55 },
   { name: '☀️ Солнце', type: 'sine', notes: [261.63, 329.63, 392, 523.25, 659.25], duration: 0.45 }
 ];
 
@@ -957,24 +924,19 @@ function playMelody(melodyIndex) {
     osc2.frequency.value = freq * 1.5;
     osc2.type = 'sine';
     
-    const attackTime = 0.05;
-    const decayTime = 0.1;
-    const sustainLevel = 0.4;
-    const releaseTime = m.duration;
-    
     gain1.gain.setValueAtTime(0, startTime);
-    gain1.gain.linearRampToValueAtTime(0.35, startTime + attackTime);
-    gain1.gain.linearRampToValueAtTime(sustainLevel * 0.35, startTime + attackTime + decayTime);
-    gain1.gain.exponentialRampToValueAtTime(0.001, startTime + releaseTime);
+    gain1.gain.linearRampToValueAtTime(0.35, startTime + 0.05);
+    gain1.gain.linearRampToValueAtTime(0.14, startTime + 0.15);
+    gain1.gain.exponentialRampToValueAtTime(0.001, startTime + m.duration);
     
     gain2.gain.setValueAtTime(0, startTime);
-    gain2.gain.linearRampToValueAtTime(0.1, startTime + attackTime);
-    gain2.gain.exponentialRampToValueAtTime(0.001, startTime + releaseTime);
+    gain2.gain.linearRampToValueAtTime(0.1, startTime + 0.05);
+    gain2.gain.exponentialRampToValueAtTime(0.001, startTime + m.duration);
     
     osc1.start(startTime);
-    osc1.stop(startTime + releaseTime + 0.1);
+    osc1.stop(startTime + m.duration + 0.1);
     osc2.start(startTime);
-    osc2.stop(startTime + releaseTime + 0.1);
+    osc2.stop(startTime + m.duration + 0.1);
   });
 }
 
@@ -1217,16 +1179,18 @@ Object.keys(themes).forEach(name => {
   themeGrid.appendChild(btn);
 });
 
-// ====== ПЛЕЙЛИСТ (МОДАЛЬНОЕ ОКНО) ======
+// ====== ПЛЕЙЛИСТ ======
 let playlist = [];
 let currentTrackIndex = -1;
 
 function renderPlaylist() {
   modalPlaylist.innerHTML = '';
+  
   if (playlist.length === 0) {
-    modalPlaylist.innerHTML = '<div style="color:rgba(255,255,255,0.4);text-align:center;padding:20px;font-family:Rajdhani;font-size:1rem;">Плейлист пуст<br><small>Добавьте треки</small></div>';
+    modalPlaylist.innerHTML = '<div style="color:rgba(255,255,255,0.4);text-align:center;padding:40px 20px;font-family:Rajdhani;font-size:1.1rem;"> Плейлист пуст<br><small style="opacity:0.6">Добавьте треки выше</small></div>';
     return;
   }
+  
   playlist.forEach((track, i) => {
     const item = document.createElement('div');
     item.className = 'playlist-item' + (i === currentTrackIndex ? ' active' : '');
@@ -1239,7 +1203,8 @@ function renderPlaylist() {
     const playBtn = document.createElement('button');
     playBtn.className = 'playlist-item-btn' + (i === currentTrackIndex && !bgAudio.paused ? ' playing' : '');
     playBtn.textContent = i === currentTrackIndex && !bgAudio.paused ? '⏸' : '▶';
-    playBtn.addEventListener('click', () => {
+    playBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
       if (i === currentTrackIndex && !bgAudio.paused) {
         bgAudio.pause();
       } else {
@@ -1251,18 +1216,9 @@ function renderPlaylist() {
     const deleteBtn = document.createElement('button');
     deleteBtn.className = 'playlist-item-btn delete';
     deleteBtn.textContent = '✕';
-    deleteBtn.addEventListener('click', async (e) => {
+    deleteBtn.addEventListener('click', (e) => {
       e.stopPropagation();
-      await deleteTrack(track.id);
-      playlist = playlist.filter(t => t.id !== track.id);
-      if (currentTrackIndex === i) {
-        bgAudio.pause();
-        bgAudio.src = '';
-        currentTrackIndex = -1;
-      } else if (currentTrackIndex > i) {
-        currentTrackIndex--;
-      }
-      renderPlaylist();
+      deleteTrack(i);
     });
     
     item.appendChild(name);
@@ -1274,15 +1230,39 @@ function renderPlaylist() {
 
 function playTrack(index) {
   if (index < 0 || index >= playlist.length) return;
+  
   const track = playlist[index];
-  const blob = new Blob([track.data], { type: track.type });
-  const url = URL.createObjectURL(blob);
-  bgAudio.src = url;
+  currentTrackIndex = index;
+  
+  bgAudio.src = track.data;
   bgAudio.volume = (modalVolumeSlider.value || volumeSlider.value) / 100;
+  
   bgAudio.play().then(() => {
-    currentTrackIndex = index;
+    console.log('Playing:', track.name);
     renderPlaylist();
-  }).catch(e => console.error('Error playing:', e));
+  }).catch(err => {
+    console.error('Playback error:', err);
+    alert('Ошибка воспроизведения: ' + err.message);
+  });
+}
+
+function deleteTrack(index) {
+  if (index < 0 || index >= playlist.length) return;
+  
+  const wasPlaying = (index === currentTrackIndex);
+  
+  playlist.splice(index, 1);
+  
+  if (wasPlaying) {
+    bgAudio.pause();
+    bgAudio.src = '';
+    currentTrackIndex = -1;
+  } else if (currentTrackIndex > index) {
+    currentTrackIndex--;
+  }
+  
+  Storage.savePlaylist(playlist);
+  renderPlaylist();
 }
 
 bgAudio.addEventListener('ended', () => {
@@ -1309,26 +1289,54 @@ modalOverlay.addEventListener('click', (e) => {
   }
 });
 
-// Добавление музыки через модальное окно
-modalMusicInput.addEventListener('change', async (e) => {
+// Добавление музыки
+modalMusicInput.addEventListener('change', (e) => {
   const files = Array.from(e.target.files);
-  if (files.length === 0) return;
+  console.log('Files selected:', files);
   
-  for (const file of files) {
-    try {
-      const arrayBuffer = await file.arrayBuffer();
-      const id = await addTrack(file.name, arrayBuffer, file.type);
-      playlist.push({ id, name: file.name, data: arrayBuffer, type: file.type });
-    } catch (err) {
-      console.error('Error adding track:', err);
-    }
+  if (files.length === 0) {
+    console.log('No files selected');
+    return;
   }
   
-  renderPlaylist();
-  if (currentTrackIndex === -1 && playlist.length > 0) {
-    playTrack(0);
-  }
-  modalMusicInput.value = '';
+  let loadedCount = 0;
+  
+  files.forEach(file => {
+    const reader = new FileReader();
+    
+    reader.onload = function(event) {
+      const dataUrl = event.target.result;
+      const track = {
+        id: Date.now() + Math.random(),
+        name: file.name,
+        data: dataUrl,
+        type: file.type
+      };
+      
+      playlist.push(track);
+      loadedCount++;
+      
+      console.log('Loaded track:', track.name);
+      
+      if (loadedCount === files.length) {
+        Storage.savePlaylist(playlist);
+        renderPlaylist();
+        
+        if (currentTrackIndex === -1 && playlist.length > 0) {
+          playTrack(0);
+        }
+        
+        modalMusicInput.value = '';
+      }
+    };
+    
+    reader.onerror = function() {
+      console.error('Error reading file:', file.name);
+      alert('Ошибка чтения файла: ' + file.name);
+    };
+    
+    reader.readAsDataURL(file);
+  });
 });
 
 // Синхронизация громкости
@@ -1345,48 +1353,50 @@ modalVolumeSlider.addEventListener('input', () => {
 });
 
 // ====== ФОН ======
-bgInput.addEventListener('change', async (e) => {
+bgInput.addEventListener('change', (e) => {
   const file = e.target.files[0];
   if (!file) return;
   
-  const arrayBuffer = await file.arrayBuffer();
-  const isVideo = file.type.startsWith('video/');
-  const isImage = file.type.startsWith('image/');
+  const reader = new FileReader();
   
-  if (isVideo) {
-    const blob = new Blob([arrayBuffer], { type: file.type });
-    const url = URL.createObjectURL(blob);
-    bgVideo.src = url;
-    bgVideo.style.display = 'block';
-    bgImage.style.display = 'none';
-    bgVideo.play();
+  reader.onload = function(event) {
+    const dataUrl = event.target.result;
+    const isVideo = file.type.startsWith('video/');
     
-    bgPreview.innerHTML = `<video src="${url}" autoplay muted loop></video>`;
-    bgPreview.classList.add('visible');
-  } else if (isImage) {
-    const blob = new Blob([arrayBuffer], { type: file.type });
-    const url = URL.createObjectURL(blob);
-    bgImage.src = url;
-    bgImage.style.display = 'block';
-    bgVideo.style.display = 'none';
+    if (isVideo) {
+      bgVideo.src = dataUrl;
+      bgVideo.style.display = 'block';
+      bgImage.style.display = 'none';
+      bgVideo.play();
+      bgPreview.innerHTML = `<video src="${dataUrl}" autoplay muted loop></video>`;
+    } else {
+      bgImage.src = dataUrl;
+      bgImage.style.display = 'block';
+      bgVideo.style.display = 'none';
+      bgPreview.innerHTML = `<img src="${dataUrl}">`;
+    }
     
-    bgPreview.innerHTML = `<img src="${url}">`;
     bgPreview.classList.add('visible');
-  }
+    Storage.saveBgMedia(file.type, dataUrl);
+    bgInput.value = '';
+  };
   
-  await saveBgMedia(file.type, arrayBuffer);
-  bgInput.value = '';
+  reader.onerror = function() {
+    alert('Ошибка чтения файла');
+  };
+  
+  reader.readAsDataURL(file);
 });
 
 // Удаление фона
-removeBgBtn.addEventListener('click', async () => {
+removeBgBtn.addEventListener('click', () => {
   bgVideo.style.display = 'none';
   bgImage.style.display = 'none';
   bgVideo.src = '';
   bgImage.src = '';
   bgPreview.classList.remove('visible');
   bgPreview.innerHTML = '';
-  await deleteBgMedia();
+  Storage.deleteBgMedia();
 });
 
 // ====== ЗАГРУЗКА СОХРАНЁННЫХ НАСТРОЕК ======
@@ -1421,36 +1431,26 @@ function loadSavedSettings() {
   totalTime = intervals[currentIndex];
 }
 
-async function loadSavedData() {
+function loadSavedData() {
   // Загрузка плейлиста
-  try {
-    playlist = await getAllTracks();
-    renderPlaylist();
-  } catch (e) {
-    console.log('Нет сохранённых треков');
-  }
+  playlist = Storage.getPlaylist();
+  console.log('Loaded playlist:', playlist);
+  renderPlaylist();
   
   // Загрузка фона
-  try {
-    const bg = await loadBgMedia();
-    if (bg && bg.data) {
-      const blob = new Blob([bg.data], { type: bg.type });
-      const url = URL.createObjectURL(blob);
-      
-      if (bg.type.startsWith('video/')) {
-        bgVideo.src = url;
-        bgVideo.style.display = 'block';
-        bgVideo.play();
-        bgPreview.innerHTML = `<video src="${url}" autoplay muted loop></video>`;
-      } else if (bg.type.startsWith('image/')) {
-        bgImage.src = url;
-        bgImage.style.display = 'block';
-        bgPreview.innerHTML = `<img src="${url}">`;
-      }
-      bgPreview.classList.add('visible');
+  const bg = Storage.getBgMedia();
+  if (bg && bg.data) {
+    if (bg.type.startsWith('video/')) {
+      bgVideo.src = bg.data;
+      bgVideo.style.display = 'block';
+      bgVideo.play();
+      bgPreview.innerHTML = `<video src="${bg.data}" autoplay muted loop></video>`;
+    } else if (bg.type.startsWith('image/')) {
+      bgImage.src = bg.data;
+      bgImage.style.display = 'block';
+      bgPreview.innerHTML = `<img src="${bg.data}">`;
     }
-  } catch (e) {
-    console.log('Нет сохранённого фона');
+    bgPreview.classList.add('visible');
   }
 }
 
