@@ -5,197 +5,78 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>MusiQ — Твой музыкальный плеер</title>
 <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/jsmediatags@3.9.7/dist/jsmediatags.min.js"></script>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Unbounded', sans-serif; }
-  
-  body, .sidebar, .main-content, .player-bar, .track-item, .playlist-item, 
-  .control-btn, .btn, .track-action-btn, .upload-zone, .context-menu,
-  .context-item, .toast, .intro-title, .intro-btn, .intro-toggle,
-  .sidebar-logo, .main-title, .player-title, .player-artist, .playlist-name,
-  .playlist-count, .track-info, .track-number, .track-duration, .time,
-  .speed-btn, .speed-option, .library-item, .add-from-library-btn, .add-playlist-btn {
-    user-select: none;
-    -webkit-user-select: none;
-  }
-  
+  body, .sidebar, .main-content, .player-bar, .track-item, .playlist-item, .control-btn, .btn, .track-action-btn, .upload-zone, .toast, .intro-title, .intro-btn, .intro-toggle, .sidebar-logo, .main-title, .player-title, .player-artist, .playlist-name, .playlist-count, .track-info, .track-number, .track-duration, .time, .speed-btn, .speed-option, .library-item, .add-from-library-btn, .add-playlist-btn, .playlist-edit-btn, .modal-field label, .modal-field input { user-select: none; -webkit-user-select: none; }
   input, textarea { user-select: text !important; -webkit-user-select: text !important; }
-  
-  :root {
-    --bg: #0a0a0a;
-    --bg-card: #1a1a1a;
-    --border: #2a2a2a;
-    --border-light: #3a3a3a;
-    --text: #ffffff;
-    --text-dim: #888888;
-    --text-muted: #555555;
-    --glass: rgba(255, 255, 255, 0.04);
-    --glass-hover: rgba(255, 255, 255, 0.08);
-    --bass: 0;
-  }
-  
-  body { min-height: 100vh; background: var(--bg); color: var(--text); overflow-x: hidden; }
-  
-  #bgCanvas, #particlesCanvas {
-    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-    z-index: 0; pointer-events: none;
-  }
-  
-  #intro {
-    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-    background: var(--bg); z-index: 9999;
-    display: flex; flex-direction: column; align-items: center; justify-content: center;
-    transition: opacity 0.6s ease;
-  }
+  :root { --bg: #0a0a0a; --bg-card: #1a1a1a; --border: #2a2a2a; --border-light: #3a3a3a; --text: #ffffff; --text-dim: #888888; --text-muted: #555555; --glass: rgba(255, 255, 255, 0.04); --glass-hover: rgba(255, 255, 255, 0.08); --bass: 0; }
+  body { min-height: 100vh; background: var(--bg); color: var(--text); overflow-x: hidden; transition: all 0.3s; }
+  #bgCanvas, #particlesCanvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none; }
+  #intro { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg); z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: opacity 0.6s ease; }
   #intro.hidden { opacity: 0; pointer-events: none; }
-  
-  .intro-toggle-container {
-    display: flex; align-items: center; justify-content: center;
-    opacity: 0; animation: toggleFadeIn 0.3s ease-out 0.3s forwards;
-  }
+  .intro-toggle-container { display: flex; align-items: center; justify-content: center; opacity: 0; animation: toggleFadeIn 0.3s ease-out 0.3s forwards; }
   @keyframes toggleFadeIn { from { opacity: 0; transform: scale(0.8); } to { opacity: 1; transform: scale(1); } }
-  
-  .intro-toggle {
-    width: 220px; height: 80px; background: #ffffff; border-radius: 40px;
-    position: relative; cursor: pointer; overflow: hidden; border: 3px solid #ffffff;
-    box-shadow: 0 0 40px rgba(255, 255, 255, 0.15);
-  }
+  .intro-toggle { width: 220px; height: 80px; background: #ffffff; border-radius: 40px; position: relative; cursor: pointer; overflow: hidden; border: 3px solid #ffffff; box-shadow: 0 0 40px rgba(255, 255, 255, 0.15); }
   .intro-toggle.wobble-toggle { animation: wobbleToggle 2s ease-in-out infinite; }
-  @keyframes wobbleToggle {
-    0%, 100% { transform: rotate(calc(var(--bass) * -3deg)) scale(1); }
-    25% { transform: rotate(calc(var(--bass) * 1.5deg)) scale(1.02); }
-    50% { transform: rotate(calc(var(--bass) * 3deg)) scale(1); }
-    75% { transform: rotate(calc(var(--bass) * -1.5deg)) scale(1.02); }
-  }
-  .toggle-knob {
-    position: absolute; top: 6px; left: 6px; width: 62px; height: 62px;
-    background: #0a0a0a; border-radius: 50%;
-    transition: left 1.2s cubic-bezier(0.68, -0.15, 0.27, 1.15);
-    box-shadow: 0 2px 15px rgba(0, 0, 0, 0.3);
-  }
+  @keyframes wobbleToggle { 0%, 100% { transform: rotate(calc(var(--bass) * -3deg)) scale(1); } 25% { transform: rotate(calc(var(--bass) * 1.5deg)) scale(1.02); } 50% { transform: rotate(calc(var(--bass) * 3deg)) scale(1); } 75% { transform: rotate(calc(var(--bass) * -1.5deg)) scale(1.02); } }
+  .toggle-knob { position: absolute; top: 6px; left: 6px; width: 62px; height: 62px; background: #0a0a0a; border-radius: 50%; transition: left 1.2s cubic-bezier(0.68, -0.15, 0.27, 1.15); box-shadow: 0 2px 15px rgba(0, 0, 0, 0.3); }
   .toggle-knob.moved { left: calc(100% - 68px); }
-  .toggle-arrow {
-    position: absolute; right: 30px; top: 50%; transform: translateY(-50%);
-    width: 50px; height: 50px; opacity: 0; transition: opacity 0.3s;
-  }
+  .toggle-arrow { position: absolute; right: 30px; top: 50%; transform: translateY(-50%); width: 50px; height: 50px; opacity: 0; transition: opacity 0.3s; }
   .toggle-arrow.visible { opacity: 1; }
   .toggle-arrow svg { width: 100%; height: 100%; }
-  
-  .intro-title {
-    font-size: 6rem; font-weight: 900; letter-spacing: 6px; color: #ffffff;
-    opacity: 0; transform: translateY(-80px); margin-top: 40px;
-    text-shadow: 0 0 60px rgba(255, 255, 255, 0.3);
-  }
+  .intro-title { font-size: 6rem; font-weight: 900; letter-spacing: 6px; color: #ffffff; opacity: 0; transform: translateY(-80px); margin-top: 40px; text-shadow: 0 0 60px rgba(255, 255, 255, 0.3); }
   .intro-title.reveal { animation: titleFlyIn 0.5s cubic-bezier(0.0, 0.0, 0.2, 1) forwards; }
-  @keyframes titleFlyIn {
-    0% { opacity: 0; transform: translateY(-80px) scale(0.9); }
-    100% { opacity: 1; transform: translateY(0) scale(1); }
-  }
-  .intro-btn {
-    margin-top: 50px; padding: 14px 55px; font-size: 1rem; font-weight: 600;
-    font-family: 'Unbounded', sans-serif; letter-spacing: 3px; color: #0a0a0a;
-    background: #ffffff; border: none; border-radius: 50px; cursor: pointer;
-    opacity: 0; transform: translateY(20px); transition: all 0.3s; text-transform: uppercase;
-  }
+  @keyframes titleFlyIn { 0% { opacity: 0; transform: translateY(-80px) scale(0.9); } 100% { opacity: 1; transform: translateY(0) scale(1); } }
+  .intro-btn { margin-top: 50px; padding: 14px 55px; font-size: 1rem; font-weight: 600; font-family: 'Unbounded', sans-serif; letter-spacing: 3px; color: #0a0a0a; background: #ffffff; border: none; border-radius: 50px; cursor: pointer; opacity: 0; transform: translateY(20px); transition: all 0.3s; text-transform: uppercase; }
   .intro-btn.visible { animation: btnFadeIn 0.4s ease-out forwards; }
   @keyframes btnFadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
   .intro-btn:hover { background: #e0e0e0; box-shadow: 0 0 40px rgba(255, 255, 255, 0.3); transform: scale(1.05); }
-  
-  #app {
-    position: relative; z-index: 2; min-height: 100vh; display: grid;
-    grid-template-columns: 280px 1fr; grid-template-rows: 1fr auto;
-    opacity: 0; transition: opacity 0.8s ease;
-  }
+  #app { position: relative; z-index: 2; min-height: 100vh; display: grid; grid-template-columns: 280px 1fr; grid-template-rows: 1fr auto; opacity: 0; transition: opacity 0.8s ease; }
   #app.visible { opacity: 1; }
-  
-  .sidebar {
-    grid-row: 1 / 3; background: rgba(10, 10, 10, 0.8); backdrop-filter: blur(20px);
-    border-right: 1px solid var(--border); padding: 25px 15px; overflow-y: auto;
-    display: flex; flex-direction: column; gap: 10px;
-  }
+  .sidebar { grid-row: 1 / 3; background: rgba(10, 10, 10, 0.8); backdrop-filter: blur(20px); border-right: 1px solid var(--border); padding: 25px 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
   .sidebar-logo { font-size: 1.8rem; font-weight: 900; letter-spacing: 3px; color: #ffffff; text-align: center; margin-bottom: 20px; padding: 10px; }
-  .sidebar-section-title {
-    font-size: 0.65rem; text-transform: uppercase; letter-spacing: 2px;
-    color: var(--text-dim); padding: 10px 10px 5px; display: flex;
-    justify-content: space-between; align-items: center; font-weight: 600;
-  }
-  .add-playlist-btn {
-    background: var(--glass); border: 1px dashed var(--border-light); color: var(--text);
-    padding: 6px 12px; border-radius: 20px; cursor: pointer; font-size: 0.7rem;
-    font-family: 'Unbounded', sans-serif; transition: all 0.3s; font-weight: 500;
-  }
+  .sidebar-section-title { font-size: 0.65rem; text-transform: uppercase; letter-spacing: 2px; color: var(--text-dim); padding: 10px 10px 5px; display: flex; justify-content: space-between; align-items: center; font-weight: 600; }
+  .add-playlist-btn { background: var(--glass); border: 1px dashed var(--border-light); color: var(--text); padding: 6px 12px; border-radius: 20px; cursor: pointer; font-size: 0.7rem; font-family: 'Unbounded', sans-serif; transition: all 0.3s; font-weight: 500; }
   .add-playlist-btn:hover { background: var(--glass-hover); transform: scale(1.05); }
-  .add-from-library-btn {
-    background: var(--glass); border: 1px solid var(--border); color: var(--text);
-    padding: 8px 12px; border-radius: 10px; cursor: pointer; font-size: 0.7rem;
-    font-family: 'Unbounded', sans-serif; transition: all 0.3s; font-weight: 500;
-    display: flex; align-items: center; gap: 6px; margin-top: 8px; width: 100%;
-  }
+  .add-from-library-btn { background: var(--glass); border: 1px solid var(--border); color: var(--text); padding: 8px 12px; border-radius: 10px; cursor: pointer; font-size: 0.7rem; font-family: 'Unbounded', sans-serif; transition: all 0.3s; font-weight: 500; display: flex; align-items: center; gap: 6px; margin-top: 8px; width: 100%; }
   .add-from-library-btn:hover { background: var(--glass-hover); border-color: #ffffff; }
   .add-from-library-btn svg { width: 14px; height: 14px; }
-  
-  .playlist-item {
-    display: flex; align-items: center; gap: 12px; padding: 10px 12px;
-    border-radius: 12px; cursor: pointer; transition: all 0.3s;
-    background: var(--glass); border: 1px solid transparent; position: relative;
-  }
+  .playlist-item { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 12px; cursor: pointer; transition: all 0.3s; background: var(--glass); border: 1px solid transparent; position: relative; }
   .playlist-item:hover { background: var(--glass-hover); border-color: var(--border); }
-  .playlist-item.active {
-    background: rgba(255, 255, 255, 0.1); border-color: #ffffff;
-    box-shadow: 0 0 20px rgba(255, 255, 255, 0.08);
-  }
-  .playlist-avatar {
-    width: 40px; height: 40px; border-radius: 10px; background: var(--bg-card);
-    display: flex; align-items: center; justify-content: center;
-    flex-shrink: 0; overflow: hidden; border: 1px solid var(--border);
-  }
+  .playlist-item.active { background: rgba(255, 255, 255, 0.1); border-color: #ffffff; box-shadow: 0 0 20px rgba(255, 255, 255, 0.08); }
+  .playlist-avatar { width: 40px; height: 40px; border-radius: 10px; background: var(--bg-card); display: flex; align-items: center; justify-content: center; flex-shrink: 0; overflow: hidden; border: 1px solid var(--border); }
   .playlist-avatar svg { width: 20px; height: 20px; color: var(--text-dim); }
   .playlist-avatar img { width: 100%; height: 100%; object-fit: cover; }
   .playlist-info { flex: 1; overflow: hidden; }
   .playlist-name { font-size: 0.85rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--text); }
   .playlist-count { font-size: 0.65rem; color: var(--text-dim); margin-top: 2px; font-weight: 400; }
-  .playlist-delete {
-    opacity: 0; background: rgba(255, 255, 255, 0.1); border: none; color: #ff6b6b;
-    width: 24px; height: 24px; border-radius: 50%; cursor: pointer;
-    transition: all 0.2s; display: flex; align-items: center; justify-content: center;
-  }
+  .playlist-delete { opacity: 0; background: rgba(255, 255, 255, 0.1); border: none; color: #ff6b6b; width: 24px; height: 24px; border-radius: 50%; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; }
   .playlist-item:hover .playlist-delete { opacity: 1; }
   .playlist-delete:hover { background: rgba(255, 107, 107, 0.3); }
   .playlist-delete svg { width: 12px; height: 12px; }
-  
+  .playlist-edit-btn { opacity: 0; background: rgba(255, 255, 255, 0.1); border: none; color: var(--text); width: 24px; height: 24px; border-radius: 50%; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; margin-right: 4px; }
+  .playlist-item:hover .playlist-edit-btn { opacity: 1; }
+  .playlist-edit-btn:hover { background: rgba(255, 255, 255, 0.2); }
+  .playlist-edit-btn svg { width: 12px; height: 12px; }
   .main-content { padding: 25px 30px; overflow-y: auto; max-height: calc(100vh - 120px); }
   .main-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; flex-wrap: wrap; gap: 15px; }
   .main-title { font-size: 1.8rem; font-weight: 800; color: var(--text); display: flex; align-items: center; gap: 15px; }
-  .main-title .avatar-big {
-    width: 60px; height: 60px; border-radius: 15px; background: var(--bg-card);
-    display: flex; align-items: center; justify-content: center; overflow: hidden; border: 1px solid var(--border);
-  }
+  .main-title .avatar-big { width: 60px; height: 60px; border-radius: 15px; background: var(--bg-card); display: flex; align-items: center; justify-content: center; overflow: hidden; border: 1px solid var(--border); }
   .main-title .avatar-big svg { width: 30px; height: 30px; color: var(--text-dim); }
   .main-title .avatar-big img { width: 100%; height: 100%; object-fit: cover; }
-  .search-box {
-    background: var(--glass); border: 1px solid var(--border); border-radius: 25px;
-    padding: 10px 20px; color: var(--text); outline: none; width: 250px;
-    transition: all 0.3s; font-size: 0.85rem; font-family: 'Unbounded', sans-serif; font-weight: 400;
-  }
+  .search-box { background: var(--glass); border: 1px solid var(--border); border-radius: 25px; padding: 10px 20px; color: var(--text); outline: none; width: 250px; transition: all 0.3s; font-size: 0.85rem; font-family: 'Unbounded', sans-serif; font-weight: 400; }
   .search-box:focus { border-color: #ffffff; background: var(--glass-hover); box-shadow: 0 0 20px rgba(255, 255, 255, 0.08); }
   .search-box::placeholder { color: var(--text-muted); }
-  
-  .upload-zone {
-    border: 2px dashed var(--border); border-radius: 20px; padding: 30px;
-    text-align: center; margin-bottom: 25px; background: var(--glass);
-    backdrop-filter: blur(10px); transition: all 0.3s; cursor: pointer;
-  }
+  .upload-zone { border: 2px dashed var(--border); border-radius: 20px; padding: 30px; text-align: center; background: var(--glass); backdrop-filter: blur(10px); transition: all 0.3s; cursor: pointer; margin-bottom: 25px; min-height: 200px; display: flex; flex-direction: column; align-items: center; justify-content: center; }
   .upload-zone:hover, .upload-zone.dragover { border-color: #ffffff; background: var(--glass-hover); }
   .upload-icon { margin-bottom: 8px; }
   .upload-icon svg { width: 50px; height: 50px; color: var(--text); }
   .upload-zone p { color: var(--text); margin: 4px 0; font-weight: 500; }
   .upload-zone small { color: var(--text-dim); font-weight: 300; }
   #fileInput { display: none; }
-  
   .track-list { display: flex; flex-direction: column; gap: 6px; }
-  .track-item {
-    display: flex; align-items: center; padding: 12px 15px; border-radius: 12px;
-    background: var(--glass); cursor: pointer; transition: all 0.3s; gap: 15px; border: 1px solid transparent;
-  }
+  .track-item { display: flex; align-items: center; padding: 12px 15px; border-radius: 12px; background: var(--glass); cursor: pointer; transition: all 0.3s; gap: 15px; border: 1px solid transparent; }
   .track-item:hover { background: var(--glass-hover); border-color: var(--border); }
   .track-item.active { background: rgba(255, 255, 255, 0.08); border-color: #ffffff; }
   .track-number { color: var(--text-dim); font-size: 0.85rem; min-width: 30px; font-weight: 500; }
@@ -203,11 +84,7 @@
   .track-info .name { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--text); font-size: 0.9rem; }
   .track-info .meta { color: var(--text-dim); font-size: 0.7rem; margin-top: 3px; font-weight: 400; }
   .track-actions { display: flex; gap: 6px; align-items: center; }
-  .track-action-btn {
-    background: var(--glass); border: 1px solid var(--border); color: var(--text);
-    width: 32px; height: 32px; border-radius: 50%; cursor: pointer;
-    transition: all 0.3s; display: flex; align-items: center; justify-content: center;
-  }
+  .track-action-btn { background: var(--glass); border: 1px solid var(--border); color: var(--text); width: 32px; height: 32px; border-radius: 50%; cursor: pointer; transition: all 0.3s; display: flex; align-items: center; justify-content: center; }
   .track-action-btn svg { width: 14px; height: 14px; }
   .track-action-btn:hover { background: var(--glass-hover); transform: scale(1.1); }
   .track-action-btn.delete { background: rgba(255, 107, 107, 0.1); color: #ff6b6b; border-color: rgba(255, 107, 107, 0.3); }
@@ -216,243 +93,89 @@
   .empty-state { text-align: center; padding: 50px 20px; color: var(--text-dim); }
   .empty-state svg { width: 80px; height: 80px; margin-bottom: 15px; opacity: 0.3; }
   .empty-state p { font-size: 0.95rem; font-weight: 500; }
-  
-  .player-bar {
-    grid-column: 2;
-    background: rgba(10, 10, 10, 0.95);
-    backdrop-filter: blur(25px);
-    border-top: 1px solid var(--border);
-    padding: 15px 25px;
-    display: grid;
-    grid-template-columns: 1fr 2fr 1fr;
-    align-items: center;
-    gap: 20px;
-  }
-  
+  .player-bar { grid-column: 2; background: rgba(10, 10, 10, 0.95); backdrop-filter: blur(25px); border-top: 1px solid var(--border); padding: 15px 25px; display: grid; grid-template-columns: 1fr 2fr 1fr; align-items: center; gap: 20px; }
   .player-track-info { display: flex; align-items: center; gap: 12px; overflow: hidden; }
-  .player-cover {
-    width: 50px; height: 50px; border-radius: 10px; background: var(--bg-card);
-    display: flex; align-items: center; justify-content: center; flex-shrink: 0; border: 1px solid var(--border);
-  }
+  .player-cover { width: 50px; height: 50px; border-radius: 10px; background: var(--bg-card); display: flex; align-items: center; justify-content: center; flex-shrink: 0; border: 1px solid var(--border); }
   .player-cover svg { width: 24px; height: 24px; color: var(--text-dim); }
   .player-text { overflow: hidden; }
   .player-title { font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--text); font-size: 0.9rem; }
   .player-artist { font-size: 0.75rem; color: var(--text-dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 400; margin-top: 2px; }
-  
   .player-center { display: flex; flex-direction: column; align-items: center; gap: 8px; }
-  
-  .player-controls {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    position: relative;
-    z-index: 10;
-  }
-  
-  .control-btn {
-    background: var(--glass);
-    border: 1px solid var(--border);
-    color: var(--text);
-    width: 40px; height: 40px;
-    border-radius: 50%;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: background 0.3s;
-  }
-  
-  .control-btn svg {
-    width: 18px; height: 18px;
-    pointer-events: none;
-  }
-  
+  .player-controls { display: flex; align-items: center; gap: 12px; position: relative; z-index: 10; }
+  .control-btn { background: var(--glass); border: 1px solid var(--border); color: var(--text); width: 40px; height: 40px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background 0.3s; }
+  .control-btn svg { width: 18px; height: 18px; pointer-events: none; }
   .control-btn:hover { background: var(--glass-hover); }
-  
-  .control-btn.active-mode {
-    background: #ffffff;
-    color: #0a0a0a;
-    border-color: #ffffff;
-    box-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
-  }
+  .control-btn.active-mode { background: #ffffff; color: #0a0a0a; border-color: #ffffff; box-shadow: 0 0 20px rgba(255, 255, 255, 0.3); }
   .control-btn.active-mode svg { color: #0a0a0a; }
-  
-  .play-btn {
-    width: 50px; height: 50px;
-    background: #ffffff;
-    color: #0a0a0a;
-    border: none;
-    box-shadow: 0 5px 20px rgba(255, 255, 255, 0.2);
-  }
+  .play-btn { width: 50px; height: 50px; background: #ffffff; color: #0a0a0a; border: none; box-shadow: 0 5px 20px rgba(255, 255, 255, 0.2); }
   .play-btn svg { width: 22px; height: 22px; color: #0a0a0a; }
   .play-btn:hover { background: #e0e0e0; }
-  
   .progress-row { display: flex; align-items: center; gap: 10px; width: 100%; }
   .time { color: var(--text-dim); font-size: 0.7rem; min-width: 40px; font-weight: 500; }
-  
-  .progress-container {
-    flex: 1;
-    height: 20px;
-    display: flex;
-    align-items: center;
-    cursor: pointer;
-    position: relative;
-    z-index: 1;
-  }
-  .progress-bar {
-    width: 100%; height: 4px; background: rgba(255, 255, 255, 0.1);
-    border-radius: 2px; position: relative; overflow: hidden; transition: height 0.15s ease;
-  }
+  .progress-container { flex: 1; height: 20px; display: flex; align-items: center; cursor: pointer; position: relative; z-index: 20; }
+  .progress-bar { width: 100%; height: 4px; background: rgba(255, 255, 255, 0.1); border-radius: 2px; position: relative; overflow: hidden; transition: height 0.15s ease; }
   .progress-container:hover .progress-bar { height: 6px; }
-  .progress-fill {
-    height: 100%; background: #ffffff; border-radius: 2px;
-    width: 0%; box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
-  }
-  .progress-tooltip {
-    position: absolute; top: -30px; transform: translateX(-50%);
-    background: rgba(255, 255, 255, 0.9); color: #0a0a0a; padding: 4px 8px;
-    border-radius: 4px; font-size: 0.7rem; font-weight: 600;
-    pointer-events: none; opacity: 0; transition: opacity 0.15s; white-space: nowrap;
-  }
-  .progress-container:hover .progress-tooltip,
-  .progress-container.dragging .progress-tooltip { opacity: 1; }
-  
+  .progress-fill { height: 100%; background: #ffffff; border-radius: 2px; width: 0%; box-shadow: 0 0 10px rgba(255, 255, 255, 0.5); }
+  .progress-tooltip { position: absolute; top: -30px; transform: translateX(-50%); background: rgba(255, 255, 255, 0.9); color: #0a0a0a; padding: 4px 8px; border-radius: 4px; font-size: 0.7rem; font-weight: 600; pointer-events: none; opacity: 0; transition: opacity 0.15s; white-space: nowrap; }
+  .progress-container:hover .progress-tooltip, .progress-container.dragging .progress-tooltip { opacity: 1; }
   .player-right { display: flex; align-items: center; justify-content: flex-end; gap: 10px; }
-  .speed-btn {
-    background: var(--glass); border: 1px solid var(--border); color: var(--text);
-    padding: 6px 12px; border-radius: 20px; cursor: pointer; font-size: 0.75rem;
-    font-family: 'Unbounded', sans-serif; font-weight: 600; transition: all 0.3s; min-width: 55px;
-  }
+  .speed-btn { background: var(--glass); border: 1px solid var(--border); color: var(--text); padding: 6px 12px; border-radius: 20px; cursor: pointer; font-size: 0.75rem; font-family: 'Unbounded', sans-serif; font-weight: 600; transition: all 0.3s; min-width: 55px; }
   .speed-btn:hover { background: var(--glass-hover); border-color: #ffffff; }
   .volume-icon svg { width: 18px; height: 18px; color: var(--text); }
-  .volume-slider {
-    width: 100px; height: 4px; -webkit-appearance: none;
-    background: rgba(255, 255, 255, 0.15); border-radius: 2px; outline: none;
-  }
-  .volume-slider::-webkit-slider-thumb {
-    -webkit-appearance: none; width: 12px; height: 12px; background: #ffffff;
-    border-radius: 50%; cursor: pointer; box-shadow: 0 0 8px rgba(255, 255, 255, 0.5);
-  }
-  .speed-menu {
-    position: absolute; bottom: 100%; right: 0; background: var(--bg-card);
-    border: 1px solid var(--border); border-radius: 12px; padding: 6px;
-    min-width: 120px; margin-bottom: 10px; display: none;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5); z-index: 50;
-  }
+  .volume-slider { width: 100px; height: 4px; -webkit-appearance: none; background: rgba(255, 255, 255, 0.15); border-radius: 2px; outline: none; }
+  .volume-slider::-webkit-slider-thumb { -webkit-appearance: none; width: 12px; height: 12px; background: #ffffff; border-radius: 50%; cursor: pointer; box-shadow: 0 0 8px rgba(255, 255, 255, 0.5); }
+  .speed-menu { position: absolute; bottom: 100%; right: 0; background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 6px; min-width: 120px; margin-bottom: 10px; display: none; box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5); z-index: 50; }
   .speed-menu.show { display: block; }
-  .speed-option {
-    padding: 8px 12px; border-radius: 8px; cursor: pointer; color: var(--text);
-    font-size: 0.8rem; font-family: 'Unbounded', sans-serif; font-weight: 500;
-    transition: all 0.2s; text-align: center;
-  }
+  .speed-option { padding: 8px 12px; border-radius: 8px; cursor: pointer; color: var(--text); font-size: 0.8rem; font-family: 'Unbounded', sans-serif; font-weight: 500; transition: all 0.2s; text-align: center; }
   .speed-option:hover { background: var(--glass-hover); }
   .speed-option.active { background: rgba(255, 255, 255, 0.15); color: #ffffff; }
   .speed-wrapper { position: relative; }
-  
-  .modal-overlay {
-    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-    background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(10px);
-    z-index: 100; display: none; align-items: center; justify-content: center;
-    animation: fadeIn 0.3s;
-  }
+  .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(10px); z-index: 100; display: none; align-items: center; justify-content: center; animation: fadeIn 0.3s; }
   .modal-overlay.show { display: flex; }
   @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-  .modal {
-    background: var(--bg-card); border: 1px solid var(--border); border-radius: 20px;
-    padding: 30px; min-width: 400px; max-width: 90vw;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5); animation: modalSlide 0.4s ease-out;
-  }
+  .modal { background: var(--bg-card); border: 1px solid var(--border); border-radius: 20px; padding: 30px; min-width: 400px; max-width: 90vw; box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5); animation: modalSlide 0.4s ease-out; }
   @keyframes modalSlide { from { transform: translateY(-30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
   .modal h3 { color: #ffffff; margin-bottom: 20px; font-size: 1.2rem; font-weight: 700; }
   .modal-field { margin-bottom: 15px; }
   .modal-field label { display: block; color: var(--text-dim); font-size: 0.7rem; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 1px; font-weight: 600; }
-  .modal-field input[type="text"] {
-    width: 100%; background: var(--glass); border: 1px solid var(--border);
-    border-radius: 10px; padding: 10px 15px; color: var(--text); outline: none;
-    font-size: 0.9rem; font-family: 'Unbounded', sans-serif; font-weight: 400; transition: all 0.3s;
-  }
+  .modal-field input[type="text"] { width: 100%; background: var(--glass); border: 1px solid var(--border); border-radius: 10px; padding: 10px 15px; color: var(--text); outline: none; font-size: 0.9rem; font-family: 'Unbounded', sans-serif; font-weight: 400; transition: all 0.3s; }
   .modal-field input[type="text"]:focus { border-color: #ffffff; box-shadow: 0 0 15px rgba(255, 255, 255, 0.1); }
   .avatar-upload { display: flex; align-items: center; gap: 15px; }
-  .avatar-preview {
-    width: 70px; height: 70px; border-radius: 15px; background: var(--bg);
-    display: flex; align-items: center; justify-content: center; overflow: hidden; border: 1px solid var(--border); flex-shrink: 0;
-  }
+  .avatar-preview { width: 70px; height: 70px; border-radius: 15px; background: var(--bg); display: flex; align-items: center; justify-content: center; overflow: hidden; border: 1px solid var(--border); flex-shrink: 0; }
   .avatar-preview svg { width: 30px; height: 30px; color: var(--text-dim); }
   .avatar-preview img { width: 100%; height: 100%; object-fit: cover; }
-  .modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px; }
-  .btn {
-    padding: 10px 25px; border-radius: 10px; border: 1px solid var(--border);
-    background: var(--glass); color: var(--text); cursor: pointer;
-    font-size: 0.85rem; font-family: 'Unbounded', sans-serif; font-weight: 500; transition: all 0.3s;
-  }
+  .modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px; flex-wrap: wrap; }
+  .btn { padding: 10px 20px; border-radius: 10px; border: 1px solid var(--border); background: var(--glass); color: var(--text); cursor: pointer; font-size: 0.8rem; font-family: 'Unbounded', sans-serif; font-weight: 500; transition: all 0.3s; }
   .btn:hover { background: var(--glass-hover); transform: translateY(-2px); }
   .btn-primary { background: #ffffff; color: #0a0a0a; border: none; font-weight: 700; }
   .btn-primary:hover { box-shadow: 0 5px 20px rgba(255, 255, 255, 0.3); background: #e0e0e0; }
   .btn-danger { background: #ff6b6b; color: #ffffff; border: none; font-weight: 700; }
   .btn-danger:hover { background: #ff5252; box-shadow: 0 5px 20px rgba(255, 107, 107, 0.4); }
+  .btn-auto { background: rgba(125, 211, 252, 0.15); color: #7dd3fc; border: 1px solid rgba(125, 211, 252, 0.3); font-weight: 600; }
+  .btn-auto:hover { background: rgba(125, 211, 252, 0.25); }
+  .btn-auto:disabled { opacity: 0.5; cursor: not-allowed; }
   .delete-modal-content { text-align: center; padding: 10px 0; }
   .delete-modal-content svg { width: 60px; height: 60px; color: #ff6b6b; margin-bottom: 15px; }
   .delete-modal-content p { color: var(--text-dim); font-size: 0.9rem; font-weight: 400; margin-top: 10px; }
   .delete-modal-content .item-name { color: var(--text); font-weight: 600; margin-top: 8px; font-size: 1rem; }
-  .library-list { max-height: 300px; overflow-y: auto; margin: 15px 0; }
-  .library-item {
-    display: flex; align-items: center; gap: 12px; padding: 10px 12px;
-    border-radius: 10px; cursor: pointer; transition: all 0.2s;
-    background: var(--glass); border: 1px solid transparent; margin-bottom: 6px;
-  }
+  .library-search { background: var(--glass); border: 1px solid var(--border); border-radius: 10px; padding: 10px 15px; color: var(--text); outline: none; width: 100%; font-size: 0.85rem; font-family: 'Unbounded', sans-serif; font-weight: 400; margin-bottom: 15px; transition: all 0.3s; }
+  .library-search:focus { border-color: #ffffff; background: var(--glass-hover); }
+  .library-search::placeholder { color: var(--text-muted); }
+  .library-list { max-height: 300px; overflow-y: auto; margin: 0; }
+  .library-item { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 10px; cursor: pointer; transition: all 0.2s; background: var(--glass); border: 1px solid transparent; margin-bottom: 6px; }
   .library-item:hover { background: var(--glass-hover); border-color: var(--border); }
   .library-item.selected { background: rgba(255, 255, 255, 0.1); border-color: #ffffff; }
-  .library-checkbox {
-    width: 20px; height: 20px; border: 2px solid var(--border-light);
-    border-radius: 5px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: all 0.2s;
-  }
+  .library-checkbox { width: 20px; height: 20px; border: 2px solid var(--border-light); border-radius: 5px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: all 0.2s; }
   .library-item.selected .library-checkbox { background: #ffffff; border-color: #ffffff; }
   .library-checkbox svg { width: 12px; height: 12px; color: #0a0a0a; opacity: 0; transition: opacity 0.2s; }
   .library-item.selected .library-checkbox svg { opacity: 1; }
   .library-item-info { flex: 1; overflow: hidden; }
   .library-item-info .name { font-size: 0.85rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .library-item-info .artist { font-size: 0.7rem; color: var(--text-dim); margin-top: 2px; }
-  .context-menu {
-    position: fixed; background: var(--bg-card); backdrop-filter: blur(20px);
-    border: 1px solid var(--border); border-radius: 12px; padding: 6px;
-    min-width: 200px; z-index: 200; display: none; box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
-  }
-  .context-menu.show { display: block; }
-  .context-item {
-    padding: 10px 15px; border-radius: 8px; cursor: pointer; color: var(--text);
-    font-size: 0.85rem; font-family: 'Unbounded', sans-serif; font-weight: 400;
-    transition: all 0.2s; display: flex; align-items: center; gap: 10px;
-  }
-  .context-item svg { width: 16px; height: 16px; }
-  .context-item:hover { background: var(--glass-hover); }
-  .context-divider { height: 1px; background: var(--border); margin: 4px 0; }
-  
-  /* ===== ИСПРАВЛЕННЫЙ TOAST ===== */
-  .toast {
-    position: fixed;
-    bottom: 140px;
-    left: 50%;
-    transform: translateX(-50%) translateY(100px);
-    background: #ffffff;
-    color: #0a0a0a;
-    padding: 12px 30px;
-    border-radius: 30px;
-    box-shadow: 0 10px 30px rgba(255, 255, 255, 0.2);
-    opacity: 0;
-    transition: all 0.4s;
-    z-index: 1000;
-    font-weight: 600;
-    font-family: 'Unbounded', sans-serif;
-    font-size: 0.85rem;
-    pointer-events: none; /* ← ИСПРАВЛЕНИЕ: невидимый toast пропускает клики */
-  }
-  
-  .toast.show {
-    transform: translateX(-50%) translateY(0);
-    opacity: 1;
-    pointer-events: auto; /* ← ИСПРАВЛЕНИЕ: видимый toast кликабелен */
-  }
-  
+  .pending-info { background: var(--glass); border: 1px solid var(--border); border-radius: 10px; padding: 12px; margin-bottom: 15px; font-size: 0.8rem; color: var(--text-dim); }
+  .pending-info strong { color: var(--text); }
+  .toast { position: fixed; bottom: 140px; left: 50%; transform: translateX(-50%) translateY(100px); background: #ffffff; color: #0a0a0a; padding: 12px 30px; border-radius: 30px; box-shadow: 0 10px 30px rgba(255, 255, 255, 0.2); opacity: 0; transition: all 0.4s; z-index: 1000; font-weight: 600; font-family: 'Unbounded', sans-serif; font-size: 0.85rem; pointer-events: none; }
+  .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; pointer-events: auto; }
   ::-webkit-scrollbar { width: 8px; }
   ::-webkit-scrollbar-track { background: transparent; }
   ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.2); border-radius: 4px; }
@@ -473,40 +196,21 @@
 
 <svg style="display:none">
   <defs>
-    <symbol id="icon-music" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-      <path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/>
-    </symbol>
+    <symbol id="icon-music" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></symbol>
     <symbol id="icon-play" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></symbol>
     <symbol id="icon-pause" viewBox="0 0 24 24" fill="currentColor"><path d="M6 4h4v16H6zM14 4h4v16h-4z"/></symbol>
     <symbol id="icon-next" viewBox="0 0 24 24" fill="currentColor"><path d="M6 4l12 8-12 8V4zM18 4h2v16h-2z"/></symbol>
     <symbol id="icon-prev" viewBox="0 0 24 24" fill="currentColor"><path d="M18 4L6 12l12 8V4zM4 4h2v16H4z"/></symbol>
-    <symbol id="icon-shuffle" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-      <polyline points="16 3 21 3 21 8"/><line x1="4" y1="20" x2="21" y2="3"/><polyline points="21 16 21 21 16 21"/><line x1="15" y1="15" x2="21" y2="21"/><line x1="4" y1="4" x2="9" y2="9"/>
-    </symbol>
-    <symbol id="icon-repeat" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-      <polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/>
-    </symbol>
-    <symbol id="icon-volume" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-      <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/>
-    </symbol>
-    <symbol id="icon-upload" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
-    </symbol>
-    <symbol id="icon-edit" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-      <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
-    </symbol>
-    <symbol id="icon-delete" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-      <polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/>
-    </symbol>
-    <symbol id="icon-plus" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-      <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
-    </symbol>
-    <symbol id="icon-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-      <polyline points="20 6 9 17 4 12"/>
-    </symbol>
-    <symbol id="icon-warning" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-      <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
-    </symbol>
+    <symbol id="icon-shuffle" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 3 21 3 21 8"/><line x1="4" y1="20" x2="21" y2="3"/><polyline points="21 16 21 21 16 21"/><line x1="15" y1="15" x2="21" y2="21"/><line x1="4" y1="4" x2="9" y2="9"/></symbol>
+    <symbol id="icon-repeat" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></symbol>
+    <symbol id="icon-volume" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/></symbol>
+    <symbol id="icon-upload" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></symbol>
+    <symbol id="icon-edit" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></symbol>
+    <symbol id="icon-delete" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></symbol>
+    <symbol id="icon-plus" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></symbol>
+    <symbol id="icon-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></symbol>
+    <symbol id="icon-warning" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></symbol>
+    <symbol id="icon-magic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 4V2M15 16v-2M8 9h2M20 9h2M17.8 11.8L19 13M17.8 6.2L19 5M12.2 11.8L11 13M12.2 6.2L11 5"/><path d="M15 9a3 3 0 1 0 0 6 3 3 0 0 0 0-6z"/></symbol>
   </defs>
 </svg>
 
@@ -572,24 +276,13 @@
         <div class="player-artist" id="playerArtist">Выбери трек</div>
       </div>
     </div>
-    
     <div class="player-center">
       <div class="player-controls">
-        <button class="control-btn" id="shuffleBtn" title="Случайный (S)">
-          <svg><use href="#icon-shuffle"/></svg>
-        </button>
-        <button class="control-btn" id="prevBtn" title="Предыдущий">
-          <svg><use href="#icon-prev"/></svg>
-        </button>
-        <button class="control-btn play-btn" id="playBtn" title="Play/Pause">
-          <svg><use href="#icon-play"/></svg>
-        </button>
-        <button class="control-btn" id="nextBtn" title="Следующий">
-          <svg><use href="#icon-next"/></svg>
-        </button>
-        <button class="control-btn" id="repeatBtn" title="Повтор (R)">
-          <svg><use href="#icon-repeat"/></svg>
-        </button>
+        <button class="control-btn" id="shuffleBtn" title="Случайный (S)"><svg><use href="#icon-shuffle"/></svg></button>
+        <button class="control-btn" id="prevBtn" title="Предыдущий"><svg><use href="#icon-prev"/></svg></button>
+        <button class="control-btn play-btn" id="playBtn" title="Play/Pause"><svg><use href="#icon-play"/></svg></button>
+        <button class="control-btn" id="nextBtn" title="Следующий"><svg><use href="#icon-next"/></svg></button>
+        <button class="control-btn" id="repeatBtn" title="Повтор (R)"><svg><use href="#icon-repeat"/></svg></button>
       </div>
       <div class="progress-row">
         <span class="time" id="currentTime">0:00</span>
@@ -600,7 +293,6 @@
         <span class="time" id="duration">0:00</span>
       </div>
     </div>
-    
     <div class="player-right">
       <div class="speed-wrapper">
         <button class="speed-btn" id="speedBtn">1.0x</button>
@@ -643,10 +335,21 @@
 
 <div class="modal-overlay" id="trackEditModal">
   <div class="modal tilt-3d">
-    <h3>Редактировать трек</h3>
-    <div class="modal-field"><label>Название</label><input type="text" id="editTrackTitle" placeholder="Название песни"></div>
-    <div class="modal-field"><label>Исполнитель</label><input type="text" id="editTrackArtist" placeholder="Имя исполнителя"></div>
+    <h3 id="trackEditModalTitle">Редактировать трек</h3>
+    <div class="pending-info" id="pendingFileInfo" style="display:none;"></div>
+    <div class="modal-field">
+      <label>Название</label>
+      <input type="text" id="editTrackTitle" placeholder="Название песни">
+    </div>
+    <div class="modal-field">
+      <label>Исполнитель</label>
+      <input type="text" id="editTrackArtist" placeholder="Имя исполнителя">
+    </div>
     <div class="modal-actions">
+      <button class="btn btn-auto" id="autoFillBtn" title="Автозаполнение из метаданных">
+        <svg style="width:14px;height:14px;vertical-align:middle;margin-right:4px;"><use href="#icon-magic"/></svg>
+        Авто
+      </button>
       <button class="btn" id="cancelEditBtn">Отмена</button>
       <button class="btn btn-primary" id="saveEditBtn">Сохранить</button>
     </div>
@@ -671,6 +374,7 @@
 <div class="modal-overlay" id="libraryModal">
   <div class="modal tilt-3d" style="min-width: 450px;">
     <h3>Добавить из библиотеки</h3>
+    <input type="text" class="library-search" id="librarySearch" placeholder="🔍 Поиск треков...">
     <div class="library-list" id="libraryList"></div>
     <div class="modal-actions">
       <button class="btn" id="cancelLibraryBtn">Отмена</button>
@@ -679,23 +383,16 @@
   </div>
 </div>
 
-<div class="context-menu" id="contextMenu">
-  <div class="context-item" data-action="edit"><svg><use href="#icon-edit"/></svg><span>Редактировать</span></div>
-  <div class="context-item" data-action="add-to-playlist"><svg><use href="#icon-plus"/></svg><span>В плейлист...</span></div>
-  <div class="context-divider"></div>
-  <div class="context-item" data-action="delete" style="color:#ff6b6b"><svg><use href="#icon-delete"/></svg><span>Удалить</span></div>
-</div>
-
 <div class="toast" id="toast"></div>
-<audio id="audio"></audio>
+<audio id="audio" disablesplaybackratepreservation></audio>
 
 <script>
-const DB_NAME = 'MusiQ_DB_V9';
+const DB_NAME = 'MusiQ_DB_V23';
 let db;
 
 function openDB() {
   return new Promise((resolve, reject) => {
-    const req = indexedDB.open(DB_NAME, 2);
+    const req = indexedDB.open(DB_NAME, 3);
     req.onupgradeneeded = e => {
       const d = e.target.result;
       if (!d.objectStoreNames.contains('tracks')) d.createObjectStore('tracks', { keyPath: 'id' });
@@ -724,10 +421,13 @@ let tracks = [], playlists = [];
 let currentPlaylistId = 'all', currentTrackId = null;
 let isPlaying = false, shuffleMode = false, repeatMode = false;
 let shuffleQueue = [], editingTrackId = null, editingPlaylistId = null;
-let contextTrackId = null, bassLevel = 0;
+let bassLevel = 0;
 let deleteTarget = null;
 let librarySelectedIds = new Set();
 let audioContext, analyser, source, dataArray, visualizerReady = false;
+let currentSpeed = 1.0;
+let pendingFiles = [];
+let pendingFileIndex = 0;
 
 const audio = document.getElementById('audio');
 audio.volume = 0.7;
@@ -789,12 +489,12 @@ resizeCanvases();
 window.addEventListener('resize', resizeCanvases);
 
 const BARS_COUNT = 80;
-let barsData = Array(BARS_COUNT).fill(0).map(() => Math.random());
+let barsData = Array(200).fill(0).map(() => Math.random());
 
 function drawBars() {
   bgCtx.clearRect(0, 0, bgCanvas.width, bgCanvas.height);
-  const barWidth = bgCanvas.width / BARS_COUNT;
   const time = Date.now() / 1000;
+  const barWidth = bgCanvas.width / BARS_COUNT;
   for (let i = 0; i < BARS_COUNT; i++) {
     let value;
     if (visualizerReady && isPlaying && analyser) {
@@ -816,43 +516,47 @@ function drawBars() {
   }
 }
 
-class Particle {
+class Leaf {
   constructor() { this.reset(true); }
   reset(initial = false) {
-    this.x = initial ? Math.random() * particlesCanvas.width : -10;
-    this.y = Math.random() * particlesCanvas.height;
-    this.size = Math.random() * 2 + 0.5;
-    this.speed = Math.random() * 1.2 + 0.3;
-    this.opacity = Math.random() * 0.4 + 0.15;
-    this.wobble = Math.random() * Math.PI * 2;
-    this.wobbleSpeed = Math.random() * 0.02 + 0.005;
+    this.x = initial ? Math.random() * particlesCanvas.width : Math.random() * particlesCanvas.width;
+    this.y = initial ? Math.random() * particlesCanvas.height : -20;
+    this.size = Math.random() * 8 + 4;
+    this.speedY = Math.random() * 1 + 0.5;
+    this.speedX = Math.random() * 1 - 0.5;
+    this.rotation = Math.random() * 360;
+    this.rotationSpeed = Math.random() * 2 - 1;
+    const colors = ['rgba(255, 165, 0, 0.6)', 'rgba(255, 215, 0, 0.6)', 'rgba(255, 140, 0, 0.6)', 'rgba(205, 133, 63, 0.6)', 'rgba(220, 20, 60, 0.6)', 'rgba(178, 34, 34, 0.6)'];
+    this.color = colors[Math.floor(Math.random() * colors.length)];
   }
   update() {
-    this.x += this.speed;
-    this.wobble += this.wobbleSpeed;
-    this.y += Math.sin(this.wobble) * 0.3;
-    if (this.x > particlesCanvas.width + 10) this.reset();
+    this.y += this.speedY;
+    this.x += this.speedX + Math.sin(this.y * 0.02) * 0.5;
+    this.rotation += this.rotationSpeed;
+    if (this.y > particlesCanvas.height + 20) this.reset();
   }
   draw() {
+    pCtx.save();
+    pCtx.translate(this.x, this.y);
+    pCtx.rotate(this.rotation * Math.PI / 180);
     pCtx.beginPath();
-    pCtx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-    pCtx.fillStyle = `rgba(255, 255, 255, ${this.opacity})`;
+    pCtx.moveTo(0, -this.size);
+    pCtx.bezierCurveTo(this.size/2, -this.size/2, this.size, 0, 0, this.size);
+    pCtx.bezierCurveTo(-this.size, 0, -this.size/2, -this.size/2, 0, -this.size);
+    pCtx.fillStyle = this.color;
     pCtx.fill();
-    pCtx.beginPath();
-    pCtx.arc(this.x, this.y, this.size * 3, 0, Math.PI * 2);
-    pCtx.fillStyle = `rgba(255, 255, 255, ${this.opacity * 0.1})`;
-    pCtx.fill();
+    pCtx.restore();
   }
 }
 
-const particles = Array(70).fill(0).map(() => new Particle());
+const leaves = Array(30).fill(0).map(() => new Leaf());
 
-function drawParticles() {
+function drawLeaves() {
   pCtx.clearRect(0, 0, particlesCanvas.width, particlesCanvas.height);
-  particles.forEach(p => { p.update(); p.draw(); });
+  leaves.forEach(leaf => { leaf.update(); leaf.draw(); });
 }
 
-function animate() { drawBars(); drawParticles(); requestAnimationFrame(animate); }
+function animate() { drawBars(); drawLeaves(); requestAnimationFrame(animate); }
 animate();
 
 function initModalTilt() {
@@ -896,7 +600,10 @@ function updateBassWobble() {
     const bassRange = Math.floor(dataArray.length * 0.3);
     for (let i = 0; i < bassRange; i++) sum += dataArray[i];
     bassLevel = (sum / bassRange) / 255;
-  } else bassLevel *= 0.95;
+  } else {
+    bassLevel *= 0.9;
+    if (bassLevel < 0.05) bassLevel = 0.15 + Math.sin(Date.now() / 800) * 0.05;
+  }
   document.documentElement.style.setProperty('--bass', bassLevel.toFixed(3));
   requestAnimationFrame(updateBassWobble);
 }
@@ -914,6 +621,12 @@ function initAudioContext() {
     dataArray = new Uint8Array(analyser.frequencyBinCount);
     visualizerReady = true;
   } catch (e) { console.warn(e); }
+}
+
+function setPlaybackSpeed(speed) {
+  currentSpeed = speed;
+  audio.preservesPitch = false;
+  audio.playbackRate = speed;
 }
 
 function showDeleteModal(type, id, name) {
@@ -956,8 +669,22 @@ function showLibraryModal() {
   if (tracks.length === 0) { showToast('Библиотека пуста'); return; }
   const pl = playlists.find(p => p.id === currentPlaylistId);
   librarySelectedIds = new Set();
+  $('librarySearch').value = '';
+  renderLibraryList(pl);
+  $('libraryModal').classList.add('show');
+  initModalTilt();
+  setTimeout(() => $('librarySearch').focus(), 100);
+}
+
+function renderLibraryList(pl) {
+  const query = $('librarySearch').value.toLowerCase().trim();
+  let filtered = tracks;
+  if (query) {
+    filtered = tracks.filter(t => t.title.toLowerCase().includes(query) || t.artist.toLowerCase().includes(query) || t.name.toLowerCase().includes(query));
+  }
   const list = $('libraryList');
-  list.innerHTML = tracks.map(t => {
+  if (filtered.length === 0) { list.innerHTML = '<div class="library-empty">Ничего не найдено</div>'; return; }
+  list.innerHTML = filtered.map(t => {
     const alreadyIn = pl && pl.trackIds.includes(t.id);
     return `<div class="library-item ${alreadyIn ? 'selected' : ''}" data-lib-id="${t.id}">
       <div class="library-checkbox"><svg><use href="#icon-check"/></svg></div>
@@ -965,9 +692,9 @@ function showLibraryModal() {
       ${alreadyIn ? '<span style="color:var(--text-dim);font-size:0.7rem;">уже в плейлисте</span>' : ''}
     </div>`;
   }).join('');
-  $('libraryModal').classList.add('show');
-  initModalTilt();
 }
+
+$('librarySearch').addEventListener('input', () => { const pl = playlists.find(p => p.id === currentPlaylistId); renderLibraryList(pl); });
 
 $('libraryList').addEventListener('click', e => {
   const item = e.target.closest('.library-item');
@@ -995,19 +722,98 @@ $('cancelLibraryBtn').addEventListener('click', () => { $('libraryModal').classL
 async function handleFiles(files) {
   const audioFiles = Array.from(files).filter(f => f.type.startsWith('audio/'));
   if (!audioFiles.length) { showToast('Нужны аудиофайлы'); return; }
-  for (const file of audioFiles) {
-    const { artist, title } = parseFileName(file.name);
-    const buffer = await file.arrayBuffer();
-    const track = { id: genId(), name: file.name, title, artist, size: file.size, type: file.type, data: buffer, addedAt: Date.now() };
-    await dbAdd('tracks', track);
-    if (currentPlaylistId !== 'all') {
-      const pl = playlists.find(p => p.id === currentPlaylistId);
-      if (pl) { pl.trackIds.push(track.id); await dbPut('playlists', pl); }
-    }
-  }
-  await loadData();
-  showToast(`Добавлено: ${audioFiles.length}`);
+  pendingFiles = audioFiles;
+  pendingFileIndex = 0;
+  showPendingFileModal();
 }
+
+function showPendingFileModal() {
+  if (pendingFileIndex >= pendingFiles.length) { pendingFiles = []; pendingFileIndex = 0; return; }
+  const file = pendingFiles[pendingFileIndex];
+  const { title, artist } = parseFileName(file.name);
+  $('trackEditModalTitle').textContent = `Трек ${pendingFileIndex + 1} из ${pendingFiles.length}`;
+  $('pendingFileInfo').style.display = 'block';
+  $('pendingFileInfo').innerHTML = `<strong>Файл:</strong> ${escapeHtml(file.name)} <br><strong>Размер:</strong> ${formatSize(file.size)}`;
+  $('editTrackTitle').value = title;
+  $('editTrackArtist').value = artist;
+  $('autoFillBtn').disabled = false;
+  $('autoFillBtn').innerHTML = '<svg style="width:14px;height:14px;vertical-align:middle;margin-right:4px;"><use href="#icon-magic"/></svg>Авто';
+  $('autoFillBtn').style.display = 'inline-flex';
+  editingTrackId = null;
+  $('trackEditModal').classList.add('show');
+  initModalTilt();
+  setTimeout(() => $('editTrackTitle').focus(), 100);
+}
+
+$('autoFillBtn').addEventListener('click', () => {
+  if (pendingFileIndex >= pendingFiles.length && !editingTrackId) return;
+  const file = pendingFileIndex < pendingFiles.length ? pendingFiles[pendingFileIndex] : null;
+  const track = editingTrackId ? tracks.find(t => t.id === editingTrackId) : null;
+  
+  $('autoFillBtn').disabled = true;
+  $('autoFillBtn').innerHTML = '<svg style="width:14px;height:14px;vertical-align:middle;margin-right:4px;"><use href="#icon-magic"/></svg>Загрузка...';
+  
+  if (typeof jsmediatags === 'undefined') {
+    showToast('Библиотека метаданных не загружена');
+    $('autoFillBtn').disabled = false;
+    $('autoFillBtn').innerHTML = '<svg style="width:14px;height:14px;vertical-align:middle;margin-right:4px;"><use href="#icon-magic"/></svg>Авто';
+    return;
+  }
+  
+  const target = file || { data: track.data, type: track.type };
+  jsmediatags.read(target, {
+    onSuccess: function(tag) {
+      const tags = tag.tags;
+      let found = false;
+      if (tags.title && tags.title.trim()) { $('editTrackTitle').value = tags.title.trim(); found = true; }
+      if (tags.artist && tags.artist.trim()) { $('editTrackArtist').value = tags.artist.trim(); found = true; }
+      showToast(found ? '✅ Метаданные найдены!' : ' Метаданные не найдены в файле');
+      $('autoFillBtn').disabled = false;
+      $('autoFillBtn').innerHTML = '<svg style="width:14px;height:14px;vertical-align:middle;margin-right:4px;"><use href="#icon-magic"/></svg>Авто';
+    },
+    onError: function(error) {
+      console.error(error);
+      showToast('❌ Ошибка чтения метаданных');
+      $('autoFillBtn').disabled = false;
+      $('autoFillBtn').innerHTML = '<svg style="width:14px;height:14px;vertical-align:middle;margin-right:4px;"><use href="#icon-magic"/></svg>Авто';
+    }
+  });
+});
+
+$('saveEditBtn').addEventListener('click', async () => {
+  const title = $('editTrackTitle').value.trim();
+  const artist = $('editTrackArtist').value.trim();
+  if (pendingFileIndex < pendingFiles.length) {
+    const file = pendingFiles[pendingFileIndex];
+    const buffer = await file.arrayBuffer();
+    const track = { id: genId(), name: file.name, title: title || parseFileName(file.name).title, artist: artist, size: file.size, type: file.type, data: buffer, addedAt: Date.now() };
+    await dbAdd('tracks', track);
+    if (currentPlaylistId !== 'all') { const pl = playlists.find(p => p.id === currentPlaylistId); if (pl) { pl.trackIds.push(track.id); await dbPut('playlists', pl); } }
+    pendingFileIndex++;
+    $('trackEditModal').classList.remove('show');
+    if (pendingFileIndex < pendingFiles.length) { setTimeout(() => showPendingFileModal(), 200); }
+    else { await loadData(); showToast(`✅ Добавлено треков: ${pendingFiles.length}`); pendingFiles = []; pendingFileIndex = 0; }
+  } else if (editingTrackId) {
+    const track = tracks.find(t => t.id === editingTrackId);
+    if (!track) return;
+    track.title = title || track.title;
+    track.artist = artist;
+    await dbPut('tracks', track);
+    $('trackEditModal').classList.remove('show');
+    await loadData();
+    if (currentTrackId === editingTrackId) { $('playerTitle').textContent = track.title; $('playerArtist').textContent = track.artist || 'Неизвестный'; }
+    showToast('Сохранено');
+  }
+});
+
+$('cancelEditBtn').addEventListener('click', () => {
+  if (pendingFileIndex < pendingFiles.length) {
+    pendingFileIndex++;
+    $('trackEditModal').classList.remove('show');
+    if (pendingFileIndex < pendingFiles.length) { setTimeout(() => showPendingFileModal(), 200); }
+    else { pendingFiles = []; pendingFileIndex = 0; }
+  } else { $('trackEditModal').classList.remove('show'); }
+});
 
 async function loadData() {
   tracks = await dbGetAll('tracks');
@@ -1027,6 +833,7 @@ function renderPlaylists() {
       <div class="playlist-item ${p.id === currentPlaylistId ? 'active' : ''}" data-playlist-id="${p.id}">
         <div class="playlist-avatar">${p.avatar ? `<img src="${p.avatar}" alt="">` : '<svg><use href="#icon-music"/></svg>'}</div>
         <div class="playlist-info"><div class="playlist-name">${escapeHtml(p.name)}</div><div class="playlist-count">${p.trackIds.length} ${pluralize(p.trackIds.length, 'трек', 'трека', 'треков')}</div></div>
+        <button class="playlist-edit-btn" data-edit-pl="${p.id}" title="Редактировать"><svg><use href="#icon-edit"/></svg></button>
         <button class="playlist-delete" data-delete-pl="${p.id}" title="Удалить"><svg><use href="#icon-delete"/></svg></button>
       </div>
       ${p.id === currentPlaylistId ? `<button class="add-from-library-btn" data-add-lib="${p.id}"><svg><use href="#icon-plus"/></svg>Добавить из библиотеки</button>` : ''}
@@ -1058,11 +865,17 @@ $('savePlaylistBtn').addEventListener('click', async () => {
   const name = $('playlistNameInput').value.trim();
   if (!name) { showToast('Введи название'); return; }
   const avatar = $('playlistAvatarPreview').dataset.avatar || '';
-  if (editingPlaylistId) { const pl = playlists.find(p => p.id === editingPlaylistId); pl.name = name; pl.avatar = avatar; await dbPut('playlists', pl); }
-  else { await dbAdd('playlists', { id: genId(), name, avatar, trackIds: [], createdAt: Date.now() }); }
+  if (editingPlaylistId) {
+    const pl = playlists.find(p => p.id === editingPlaylistId);
+    pl.name = name; pl.avatar = avatar;
+    await dbPut('playlists', pl);
+    showToast('Плейлист обновлён');
+  } else {
+    await dbAdd('playlists', { id: genId(), name, avatar, trackIds: [], createdAt: Date.now() });
+    showToast('Плейлист сохранён');
+  }
   $('playlistModal').classList.remove('show');
   await loadData();
-  showToast('Плейлист сохранён');
 });
 
 $('cancelPlaylistBtn').addEventListener('click', () => $('playlistModal').classList.remove('show'));
@@ -1070,6 +883,22 @@ $('cancelPlaylistBtn').addEventListener('click', () => $('playlistModal').classL
 document.addEventListener('click', async e => {
   const delBtn = e.target.closest('[data-delete-pl]');
   if (delBtn) { e.stopPropagation(); const id = delBtn.dataset.deletePl; const pl = playlists.find(p => p.id === id); if (pl) showDeleteModal('playlist', id, pl.name); return; }
+  const editPlBtn = e.target.closest('[data-edit-pl]');
+  if (editPlBtn) {
+    e.stopPropagation();
+    const id = editPlBtn.dataset.editPl;
+    const pl = playlists.find(p => p.id === id);
+    if (!pl) return;
+    editingPlaylistId = id;
+    $('playlistModalTitle').textContent = 'Редактировать плейлист';
+    $('playlistNameInput').value = pl.name;
+    $('playlistAvatarPreview').innerHTML = pl.avatar ? `<img src="${pl.avatar}" alt="">` : '<svg><use href="#icon-music"/></svg>';
+    $('playlistAvatarPreview').dataset.avatar = pl.avatar || '';
+    $('playlistModal').classList.add('show');
+    initModalTilt();
+    setTimeout(() => $('playlistNameInput').focus(), 100);
+    return;
+  }
   const addLibBtn = e.target.closest('[data-add-lib]');
   if (addLibBtn) { e.stopPropagation(); showLibraryModal(); return; }
   const plItem = e.target.closest('.playlist-item');
@@ -1118,68 +947,26 @@ $('trackList').addEventListener('click', async e => {
   const delBtn = e.target.closest('[data-delete]');
   if (delBtn) { e.stopPropagation(); const id = delBtn.dataset.delete; const track = tracks.find(t => t.id === id); if (track) showDeleteModal('track', id, track.title); return; }
   const editBtn = e.target.closest('[data-edit]');
-  if (editBtn) { e.stopPropagation(); openTrackEditor(editBtn.dataset.edit); return; }
+  if (editBtn) {
+    e.stopPropagation();
+    const id = editBtn.dataset.edit;
+    const track = tracks.find(t => t.id === id);
+    if (!track) return;
+    editingTrackId = id;
+    pendingFileIndex = pendingFiles.length;
+    $('trackEditModalTitle').textContent = 'Редактировать трек';
+    $('pendingFileInfo').style.display = 'none';
+    $('editTrackTitle').value = track.title;
+    $('editTrackArtist').value = track.artist || '';
+    $('autoFillBtn').style.display = 'inline-flex';
+    $('trackEditModal').classList.add('show');
+    initModalTilt();
+    setTimeout(() => $('editTrackTitle').focus(), 100);
+    return;
+  }
   const item = e.target.closest('.track-item');
   if (item) { const id = item.dataset.id; if (shuffleMode) { buildShuffleQueue(); shuffleQueue = shuffleQueue.filter(qid => qid !== id); } playTrack(id); }
 });
-
-$('trackList').addEventListener('contextmenu', e => {
-  const item = e.target.closest('.track-item');
-  if (!item) return;
-  e.preventDefault();
-  contextTrackId = item.dataset.id;
-  const menu = $('contextMenu');
-  menu.style.left = e.clientX + 'px';
-  menu.style.top = e.clientY + 'px';
-  menu.classList.add('show');
-});
-
-document.addEventListener('click', () => $('contextMenu').classList.remove('show'));
-
-$('contextMenu').addEventListener('click', e => {
-  const item = e.target.closest('.context-item');
-  if (!item) return;
-  const action = item.dataset.action;
-  if (action === 'edit') openTrackEditor(contextTrackId);
-  else if (action === 'delete') { const track = tracks.find(t => t.id === contextTrackId); if (track) showDeleteModal('track', contextTrackId, track.title); }
-  else if (action === 'add-to-playlist') showAddToPlaylistMenu(contextTrackId);
-});
-
-function showAddToPlaylistMenu(trackId) {
-  if (!playlists.length) { showToast('Сначала создай плейлист'); return; }
-  const names = playlists.map((p, i) => `${i+1}. ${p.name}`).join('\n');
-  const choice = prompt(`В какой плейлист добавить?\n${names}`);
-  const idx = parseInt(choice) - 1;
-  if (isNaN(idx) || !playlists[idx]) return;
-  const pl = playlists[idx];
-  if (!pl.trackIds.includes(trackId)) { pl.trackIds.push(trackId); dbPut('playlists', pl).then(() => { loadData(); showToast(`Добавлено в "${pl.name}"`); }); }
-  else showToast('Уже в этом плейлисте');
-}
-
-function openTrackEditor(id) {
-  const track = tracks.find(t => t.id === id);
-  if (!track) return;
-  editingTrackId = id;
-  $('editTrackTitle').value = track.title;
-  $('editTrackArtist').value = track.artist || '';
-  $('trackEditModal').classList.add('show');
-  initModalTilt();
-  setTimeout(() => $('editTrackTitle').focus(), 100);
-}
-
-$('saveEditBtn').addEventListener('click', async () => {
-  const track = tracks.find(t => t.id === editingTrackId);
-  if (!track) return;
-  track.title = $('editTrackTitle').value.trim() || track.title;
-  track.artist = $('editTrackArtist').value.trim();
-  await dbPut('tracks', track);
-  $('trackEditModal').classList.remove('show');
-  await loadData();
-  if (currentTrackId === editingTrackId) { $('playerTitle').textContent = track.title; $('playerArtist').textContent = track.artist || 'Неизвестный'; }
-  showToast('Сохранено');
-});
-
-$('cancelEditBtn').addEventListener('click', () => $('trackEditModal').classList.remove('show'));
 
 function playTrack(id) {
   const track = tracks.find(t => t.id === id);
@@ -1189,7 +976,7 @@ function playTrack(id) {
   audio.src = URL.createObjectURL(blob);
   $('playerTitle').textContent = track.title;
   $('playerArtist').textContent = track.artist || 'Неизвестный';
-  audio.play().then(() => { isPlaying = true; $('playBtn').innerHTML = '<svg><use href="#icon-pause"/></svg>'; initAudioContext(); renderTracks(); }).catch(err => { console.error(err); showToast('Ошибка воспроизведения'); });
+  audio.play().then(() => { isPlaying = true; $('playBtn').innerHTML = '<svg><use href="#icon-pause"/></svg>'; initAudioContext(); renderTracks(); setPlaybackSpeed(currentSpeed); }).catch(err => { console.error(err); showToast('Ошибка воспроизведения'); });
 }
 
 function togglePlay() {
@@ -1276,7 +1063,7 @@ document.addEventListener('click', e => { if (!e.target.closest('.speed-wrapper'
 document.querySelectorAll('.speed-option').forEach(opt => {
   opt.addEventListener('click', () => {
     const speed = parseFloat(opt.dataset.speed);
-    audio.playbackRate = speed;
+    setPlaybackSpeed(speed);
     $('speedBtn').textContent = formatSpeed(speed);
     document.querySelectorAll('.speed-option').forEach(o => o.classList.remove('active'));
     opt.classList.add('active');
