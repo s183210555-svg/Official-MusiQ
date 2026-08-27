@@ -8,11 +8,12 @@
 <script src="https://cdn.jsdelivr.net/npm/jsmediatags@3.9.7/dist/jsmediatags.min.js"></script>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Unbounded', sans-serif; }
-  body, .sidebar, .main-content, .player-bar, .track-item, .playlist-item, .control-btn, .btn, .track-action-btn, .upload-zone, .toast, .intro-title, .intro-btn, .intro-toggle, .sidebar-logo, .main-title, .player-title, .player-artist, .playlist-name, .playlist-count, .track-info, .track-number, .track-duration, .time, .speed-btn, .speed-option, .library-item, .add-from-library-btn, .add-playlist-btn, .playlist-edit-btn, .modal-field label, .modal-field input { user-select: none; -webkit-user-select: none; }
-  input, textarea { user-select: text !important; -webkit-user-select: text !important; }
+  body, .sidebar, .main-content, .player-bar, .track-item, .playlist-item, .control-btn, .btn, .track-action-btn, .upload-zone, .toast, .intro-title, .intro-btn, .intro-toggle, .sidebar-logo, .main-title, .player-title, .player-artist, .playlist-name, .playlist-count, .track-info, .track-number, .track-duration, .time, .speed-btn, .speed-option, .library-item, .add-from-library-btn, .add-playlist-btn, .playlist-edit-btn, .modal-field label, .modal-field input, .modal-field select { user-select: none; -webkit-user-select: none; }
+  input, textarea, select { user-select: text !important; -webkit-user-select: text !important; }
   :root { --bg: #0a0a0a; --bg-card: #1a1a1a; --border: #2a2a2a; --border-light: #3a3a3a; --text: #ffffff; --text-dim: #888888; --text-muted: #555555; --glass: rgba(255, 255, 255, 0.04); --glass-hover: rgba(255, 255, 255, 0.08); --bass: 0; }
   body { min-height: 100vh; background: var(--bg); color: var(--text); overflow-x: hidden; transition: all 0.3s; }
-  #bgCanvas, #particlesCanvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none; }
+  #bgCanvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none; }
+  #particlesCanvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 50; pointer-events: none; }
   #intro { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg); z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: opacity 0.6s ease; }
   #intro.hidden { opacity: 0; pointer-events: none; }
   .intro-toggle-container { display: flex; align-items: center; justify-content: center; opacity: 0; animation: toggleFadeIn 0.3s ease-out 0.3s forwards; }
@@ -138,8 +139,9 @@
   .modal h3 { color: #ffffff; margin-bottom: 20px; font-size: 1.2rem; font-weight: 700; }
   .modal-field { margin-bottom: 15px; }
   .modal-field label { display: block; color: var(--text-dim); font-size: 0.7rem; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 1px; font-weight: 600; }
-  .modal-field input[type="text"] { width: 100%; background: var(--glass); border: 1px solid var(--border); border-radius: 10px; padding: 10px 15px; color: var(--text); outline: none; font-size: 0.9rem; font-family: 'Unbounded', sans-serif; font-weight: 400; transition: all 0.3s; }
-  .modal-field input[type="text"]:focus { border-color: #ffffff; box-shadow: 0 0 15px rgba(255, 255, 255, 0.1); }
+  .modal-field input[type="text"], .modal-field select { width: 100%; background: var(--glass); border: 1px solid var(--border); border-radius: 10px; padding: 10px 15px; color: var(--text); outline: none; font-size: 0.9rem; font-family: 'Unbounded', sans-serif; font-weight: 400; transition: all 0.3s; }
+  .modal-field input[type="text"]:focus, .modal-field select:focus { border-color: #ffffff; box-shadow: 0 0 15px rgba(255, 255, 255, 0.1); }
+  .modal-field select option { background: var(--bg-card); color: var(--text); }
   .avatar-upload { display: flex; align-items: center; gap: 15px; }
   .avatar-preview { width: 70px; height: 70px; border-radius: 15px; background: var(--bg); display: flex; align-items: center; justify-content: center; overflow: hidden; border: 1px solid var(--border); flex-shrink: 0; }
   .avatar-preview svg { width: 30px; height: 30px; color: var(--text-dim); }
@@ -305,6 +307,7 @@
           <div class="speed-option" data-speed="2">2.0x</div>
         </div>
       </div>
+      <button class="speed-btn" id="reverbBtn">Reverb</button>
       <div class="volume-icon"><svg><use href="#icon-volume"/></svg></div>
       <input type="range" class="volume-slider" id="volumeSlider" min="0" max="1" step="0.01" value="0.7">
     </div>
@@ -344,6 +347,17 @@
     <div class="modal-field">
       <label>Исполнитель</label>
       <input type="text" id="editTrackArtist" placeholder="Имя исполнителя">
+    </div>
+    <div class="modal-field">
+      <label>Скорость по умолчанию</label>
+      <select id="editTrackSpeed">
+        <option value="0.5">0.5x — Очень медленно</option>
+        <option value="0.75">0.75x — Медленно</option>
+        <option value="1" selected>1.0x — Нормально</option>
+        <option value="1.25">1.25x — Быстро</option>
+        <option value="1.5">1.5x — Очень быстро</option>
+        <option value="2">2.0x — Максимум</option>
+      </select>
     </div>
     <div class="modal-actions">
       <button class="btn btn-auto" id="autoFillBtn" title="Автозаполнение из метаданных">
@@ -387,7 +401,7 @@
 <audio id="audio" disablesplaybackratepreservation></audio>
 
 <script>
-const DB_NAME = 'MusiQ_DB_V23';
+const DB_NAME = 'MusiQ_DB_V24';
 let db;
 
 function openDB() {
@@ -425,6 +439,7 @@ let bassLevel = 0;
 let deleteTarget = null;
 let librarySelectedIds = new Set();
 let audioContext, analyser, source, dataArray, visualizerReady = false;
+let convolver = null, reverbEnabled = false;
 let currentSpeed = 1.0;
 let pendingFiles = [];
 let pendingFileIndex = 0;
@@ -516,40 +531,104 @@ function drawBars() {
   }
 }
 
+// Красивые осенние листья - летят по диагонали слева сверху в правый нижний
 class Leaf {
   constructor() { this.reset(true); }
   reset(initial = false) {
-    this.x = initial ? Math.random() * particlesCanvas.width : Math.random() * particlesCanvas.width;
-    this.y = initial ? Math.random() * particlesCanvas.height : -20;
-    this.size = Math.random() * 8 + 4;
-    this.speedY = Math.random() * 1 + 0.5;
-    this.speedX = Math.random() * 1 - 0.5;
+    // Стартуют слева сверху
+    this.x = initial ? Math.random() * particlesCanvas.width * 0.7 : -100 - Math.random() * 300;
+    this.y = initial ? Math.random() * particlesCanvas.height * 0.5 : -100 - Math.random() * 300;
+    this.size = Math.random() * 14 + 10; // больше
+    // Диагональ: быстрее вправо, медленнее вниз
+    this.speedX = Math.random() * 0.6 + 0.3;
+    this.speedY = Math.random() * 0.4 + 0.2; // медленнее
     this.rotation = Math.random() * 360;
-    this.rotationSpeed = Math.random() * 2 - 1;
-    const colors = ['rgba(255, 165, 0, 0.6)', 'rgba(255, 215, 0, 0.6)', 'rgba(255, 140, 0, 0.6)', 'rgba(205, 133, 63, 0.6)', 'rgba(220, 20, 60, 0.6)', 'rgba(178, 34, 34, 0.6)'];
+    this.rotationSpeed = (Math.random() - 0.5) * 1.2;
+    this.wobble = Math.random() * Math.PI * 2;
+    this.wobbleSpeed = Math.random() * 0.015 + 0.008;
+    this.shape = Math.floor(Math.random() * 4);
+    const colors = [
+      'rgba(255, 140, 0, 0.75)',
+      'rgba(255, 200, 50, 0.75)',
+      'rgba(220, 80, 30, 0.75)',
+      'rgba(180, 100, 40, 0.75)',
+      'rgba(200, 50, 50, 0.75)',
+      'rgba(255, 165, 0, 0.75)',
+      'rgba(160, 80, 20, 0.75)',
+      'rgba(230, 120, 40, 0.75)',
+      'rgba(210, 160, 60, 0.75)',
+      'rgba(190, 60, 40, 0.75)',
+    ];
     this.color = colors[Math.floor(Math.random() * colors.length)];
   }
   update() {
-    this.y += this.speedY;
-    this.x += this.speedX + Math.sin(this.y * 0.02) * 0.5;
+    this.wobble += this.wobbleSpeed;
+    this.x += this.speedX + Math.sin(this.wobble) * 0.4;
+    this.y += this.speedY + Math.cos(this.wobble * 0.7) * 0.3;
     this.rotation += this.rotationSpeed;
-    if (this.y > particlesCanvas.height + 20) this.reset();
+    if (this.x > particlesCanvas.width + 150 || this.y > particlesCanvas.height + 150) {
+      this.reset();
+    }
   }
   draw() {
     pCtx.save();
     pCtx.translate(this.x, this.y);
     pCtx.rotate(this.rotation * Math.PI / 180);
-    pCtx.beginPath();
-    pCtx.moveTo(0, -this.size);
-    pCtx.bezierCurveTo(this.size/2, -this.size/2, this.size, 0, 0, this.size);
-    pCtx.bezierCurveTo(-this.size, 0, -this.size/2, -this.size/2, 0, -this.size);
     pCtx.fillStyle = this.color;
+    pCtx.beginPath();
+    const s = this.size;
+    
+    if (this.shape === 0) {
+      // Кленовый лист
+      pCtx.moveTo(0, -s);
+      pCtx.bezierCurveTo(s*0.3, -s*0.7, s*0.8, -s*0.5, s, 0);
+      pCtx.bezierCurveTo(s*0.6, s*0.1, s*0.4, s*0.3, s*0.3, s*0.6);
+      pCtx.bezierCurveTo(s*0.1, s*0.4, 0, s*0.5, 0, s);
+      pCtx.bezierCurveTo(0, s*0.5, -s*0.1, s*0.4, -s*0.3, s*0.6);
+      pCtx.bezierCurveTo(-s*0.4, s*0.3, -s*0.6, s*0.1, -s, 0);
+      pCtx.bezierCurveTo(-s*0.8, -s*0.5, -s*0.3, -s*0.7, 0, -s);
+    } else if (this.shape === 1) {
+      // Овальный лист
+      pCtx.ellipse(0, 0, s * 0.5, s, 0, 0, Math.PI * 2);
+    } else if (this.shape === 2) {
+      // Сердцевидный
+      pCtx.moveTo(0, s * 0.8);
+      pCtx.bezierCurveTo(-s*0.8, s*0.2, -s*0.8, -s*0.5, 0, -s*0.3);
+      pCtx.bezierCurveTo(s*0.8, -s*0.5, s*0.8, s*0.2, 0, s*0.8);
+    } else {
+      // Простой лист
+      pCtx.moveTo(0, -s);
+      pCtx.bezierCurveTo(s*0.6, -s*0.5, s*0.6, s*0.5, 0, s);
+      pCtx.bezierCurveTo(-s*0.6, s*0.5, -s*0.6, -s*0.5, 0, -s);
+    }
+    
     pCtx.fill();
+    
+    // Жилка
+    pCtx.strokeStyle = 'rgba(0,0,0,0.25)';
+    pCtx.lineWidth = 0.8;
+    pCtx.beginPath();
+    pCtx.moveTo(0, -s * 0.8);
+    pCtx.lineTo(0, s * 0.8);
+    pCtx.stroke();
+    
+    // Боковые жилки
+    pCtx.lineWidth = 0.4;
+    for (let i = -0.5; i <= 0.5; i += 0.25) {
+      if (i === 0) continue;
+      pCtx.beginPath();
+      pCtx.moveTo(0, s * i);
+      pCtx.lineTo(s * 0.3, s * i - s * 0.15);
+      pCtx.moveTo(0, s * i);
+      pCtx.lineTo(-s * 0.3, s * i - s * 0.15);
+      pCtx.stroke();
+    }
+    
     pCtx.restore();
   }
 }
 
-const leaves = Array(30).fill(0).map(() => new Leaf());
+const leaves = Array(50).fill(0).map(() => new Leaf());
 
 function drawLeaves() {
   pCtx.clearRect(0, 0, particlesCanvas.width, particlesCanvas.height);
@@ -609,6 +688,19 @@ function updateBassWobble() {
 }
 updateBassWobble();
 
+function createReverbImpulse(ctx, duration = 2.5, decay = 3) {
+  const rate = ctx.sampleRate;
+  const length = rate * duration;
+  const impulse = ctx.createBuffer(2, length, rate);
+  for (let channel = 0; channel < 2; channel++) {
+    const data = impulse.getChannelData(channel);
+    for (let i = 0; i < length; i++) {
+      data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / length, decay);
+    }
+  }
+  return impulse;
+}
+
 function initAudioContext() {
   if (visualizerReady) return;
   try {
@@ -623,10 +715,39 @@ function initAudioContext() {
   } catch (e) { console.warn(e); }
 }
 
+function toggleReverb() {
+  if (!visualizerReady) { showToast('Сначала включи трек'); return; }
+  reverbEnabled = !reverbEnabled;
+  
+  if (!convolver) {
+    convolver = audioContext.createConvolver();
+    convolver.buffer = createReverbImpulse(audioContext);
+  }
+  
+  analyser.disconnect();
+  
+  if (reverbEnabled) {
+    analyser.connect(convolver);
+    convolver.connect(audioContext.destination);
+  } else {
+    analyser.connect(audioContext.destination);
+  }
+  
+  $('reverbBtn').classList.toggle('active-mode', reverbEnabled);
+  showToast(reverbEnabled ? '🌊 Reverb включён' : 'Reverb выключен');
+}
+
+$('reverbBtn').addEventListener('click', toggleReverb);
+
 function setPlaybackSpeed(speed) {
   currentSpeed = speed;
   audio.preservesPitch = false;
   audio.playbackRate = speed;
+  // Обновляем UI
+  $('speedBtn').textContent = formatSpeed(speed);
+  document.querySelectorAll('.speed-option').forEach(o => {
+    o.classList.toggle('active', parseFloat(o.dataset.speed) === speed);
+  });
 }
 
 function showDeleteModal(type, id, name) {
@@ -736,6 +857,7 @@ function showPendingFileModal() {
   $('pendingFileInfo').innerHTML = `<strong>Файл:</strong> ${escapeHtml(file.name)} <br><strong>Размер:</strong> ${formatSize(file.size)}`;
   $('editTrackTitle').value = title;
   $('editTrackArtist').value = artist;
+  $('editTrackSpeed').value = '1';
   $('autoFillBtn').disabled = false;
   $('autoFillBtn').innerHTML = '<svg style="width:14px;height:14px;vertical-align:middle;margin-right:4px;"><use href="#icon-magic"/></svg>Авто';
   $('autoFillBtn').style.display = 'inline-flex';
@@ -783,10 +905,12 @@ $('autoFillBtn').addEventListener('click', () => {
 $('saveEditBtn').addEventListener('click', async () => {
   const title = $('editTrackTitle').value.trim();
   const artist = $('editTrackArtist').value.trim();
+  const speed = parseFloat($('editTrackSpeed').value);
+  
   if (pendingFileIndex < pendingFiles.length) {
     const file = pendingFiles[pendingFileIndex];
     const buffer = await file.arrayBuffer();
-    const track = { id: genId(), name: file.name, title: title || parseFileName(file.name).title, artist: artist, size: file.size, type: file.type, data: buffer, addedAt: Date.now() };
+    const track = { id: genId(), name: file.name, title: title || parseFileName(file.name).title, artist: artist, speed: speed, size: file.size, type: file.type, data: buffer, addedAt: Date.now() };
     await dbAdd('tracks', track);
     if (currentPlaylistId !== 'all') { const pl = playlists.find(p => p.id === currentPlaylistId); if (pl) { pl.trackIds.push(track.id); await dbPut('playlists', pl); } }
     pendingFileIndex++;
@@ -798,10 +922,16 @@ $('saveEditBtn').addEventListener('click', async () => {
     if (!track) return;
     track.title = title || track.title;
     track.artist = artist;
+    track.speed = speed;
     await dbPut('tracks', track);
     $('trackEditModal').classList.remove('show');
     await loadData();
-    if (currentTrackId === editingTrackId) { $('playerTitle').textContent = track.title; $('playerArtist').textContent = track.artist || 'Неизвестный'; }
+    if (currentTrackId === editingTrackId) { 
+      $('playerTitle').textContent = track.title; 
+      $('playerArtist').textContent = track.artist || 'Неизвестный';
+      // Применяем скорость трека
+      setPlaybackSpeed(track.speed || 1.0);
+    }
     showToast('Сохранено');
   }
 });
@@ -925,7 +1055,7 @@ function renderTracks() {
   container.innerHTML = list.map((t, i) => `
     <div class="track-item ${t.id === currentTrackId ? 'active' : ''}" data-id="${t.id}">
       <span class="track-number">${i + 1}</span>
-      <div class="track-info"><div class="name">${escapeHtml(t.title)}</div><div class="meta">${escapeHtml(t.artist || 'Неизвестный')} • ${formatSize(t.size)}</div></div>
+      <div class="track-info"><div class="name">${escapeHtml(t.title)}</div><div class="meta">${escapeHtml(t.artist || 'Неизвестный')} • ${formatSize(t.size)}${t.speed && t.speed !== 1 ? ' • ' + formatSpeed(t.speed) : ''}</div></div>
       <span class="track-duration" data-dur="${t.id}">--:--</span>
       <div class="track-actions">
         <button class="track-action-btn" data-edit="${t.id}" title="Редактировать"><svg><use href="#icon-edit"/></svg></button>
@@ -958,7 +1088,8 @@ $('trackList').addEventListener('click', async e => {
     $('pendingFileInfo').style.display = 'none';
     $('editTrackTitle').value = track.title;
     $('editTrackArtist').value = track.artist || '';
-    $('autoFillBtn').style.display = 'inline-flex';
+    $('editTrackSpeed').value = track.speed || 1;
+    $('autoFillBtn').style.display = 'none';
     $('trackEditModal').classList.add('show');
     initModalTilt();
     setTimeout(() => $('editTrackTitle').focus(), 100);
@@ -976,7 +1107,15 @@ function playTrack(id) {
   audio.src = URL.createObjectURL(blob);
   $('playerTitle').textContent = track.title;
   $('playerArtist').textContent = track.artist || 'Неизвестный';
-  audio.play().then(() => { isPlaying = true; $('playBtn').innerHTML = '<svg><use href="#icon-pause"/></svg>'; initAudioContext(); renderTracks(); setPlaybackSpeed(currentSpeed); }).catch(err => { console.error(err); showToast('Ошибка воспроизведения'); });
+  audio.play().then(() => { 
+    isPlaying = true; 
+    $('playBtn').innerHTML = '<svg><use href="#icon-pause"/></svg>'; 
+    initAudioContext(); 
+    renderTracks(); 
+    // Устанавливаем скорость трека
+    const trackSpeed = track.speed || 1.0;
+    setPlaybackSpeed(trackSpeed);
+  }).catch(err => { console.error(err); showToast('Ошибка воспроизведения'); });
 }
 
 function togglePlay() {
@@ -1064,9 +1203,14 @@ document.querySelectorAll('.speed-option').forEach(opt => {
   opt.addEventListener('click', () => {
     const speed = parseFloat(opt.dataset.speed);
     setPlaybackSpeed(speed);
-    $('speedBtn').textContent = formatSpeed(speed);
-    document.querySelectorAll('.speed-option').forEach(o => o.classList.remove('active'));
-    opt.classList.add('active');
+    // Сохраняем скорость для текущего трека
+    if (currentTrackId) {
+      const track = tracks.find(t => t.id === currentTrackId);
+      if (track) {
+        track.speed = speed;
+        dbPut('tracks', track);
+      }
+    }
     $('speedMenu').classList.remove('show');
     showToast(`Скорость: ${formatSpeed(speed)}`);
   });
